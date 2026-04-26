@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>武士盃 2026 — 後台管理</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C9A03C;--gold-b:#E8C96A;--gold-d:#8B6914;
+  --black:#111;--dark:#1A1A1A;--card:#242424;--border:#333;
+  --white:#fff;--gray:#888;--light:#2c2c2c;
+  --green:#27ae60;--red:#e74c3c;--blue:#2980b9;
+}
+body{font-family:'Noto Sans TC','Arial',sans-serif;background:var(--dark);color:var(--white);min-height:100vh}
+
+/* ── Login ── */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{background:var(--card);border:2px solid var(--gold);border-radius:16px;padding:40px;width:100%;max-width:400px;text-align:center}
+.login-logo{font-size:48px;margin-bottom:12px}
+.login-title{font-size:24px;font-weight:700;color:var(--gold);margin-bottom:6px}
+.login-sub{font-size:13px;color:var(--gray);margin-bottom:28px}
+.login-box input{width:100%;background:#1e1e1e;border:1px solid #444;border-radius:8px;padding:14px;color:var(--white);font-size:16px;text-align:center;letter-spacing:4px;outline:none;margin-bottom:14px;font-family:monospace}
+.login-box input:focus{border-color:var(--gold)}
+
+/* ── Layout ── */
+header{background:var(--black);border-bottom:2px solid var(--gold);padding:14px 24px;display:flex;justify-content:space-between;align-items:center}
+.header-left .logo{font-size:18px;font-weight:900;color:var(--gold)}
+.header-left .sub{font-size:12px;color:var(--gray)}
+.header-right{font-size:13px;color:var(--gray);cursor:pointer}
+.header-right:hover{color:var(--gold)}
+
+.layout{display:flex;min-height:calc(100vh - 54px)}
+.sidebar{width:220px;background:var(--black);border-right:1px solid var(--border);padding:20px 0;flex-shrink:0}
+.nav-item{padding:12px 22px;cursor:pointer;font-size:14px;color:#aaa;display:flex;align-items:center;gap:10px;transition:all .2s}
+.nav-item:hover{color:var(--white);background:#1a1a1a}
+.nav-item.active{color:var(--gold);background:#1e1600;border-left:3px solid var(--gold)}
+.content{flex:1;padding:28px;overflow-x:hidden}
+@media(max-width:640px){.sidebar{display:none}.content{padding:16px}}
+
+/* ── Cards ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:22px;margin-bottom:20px}
+.card-title{font-size:16px;font-weight:700;color:var(--gold);margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+
+/* ── Stat cards ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;text-align:center}
+.stat-num{font-size:38px;font-weight:900;color:var(--gold)}
+.stat-label{font-size:12px;color:var(--gray);margin-top:4px}
+.stat-sub{font-size:11px;color:#555;margin-top:2px}
+
+/* ── Progress editor ── */
+.progress-preview{background:var(--black);border-radius:8px;padding:16px;margin:14px 0}
+.progress-bar-bg{background:#333;border-radius:20px;height:12px;overflow:hidden;margin:8px 0}
+.progress-bar-fill{background:linear-gradient(90deg,var(--gold-d),var(--gold-b));height:100%;border-radius:20px;transition:width .3s}
+.range-wrap{display:flex;align-items:center;gap:12px}
+.range-wrap input[type=range]{flex:1;accent-color:var(--gold)}
+.range-val{font-size:22px;font-weight:700;color:var(--gold);min-width:50px;text-align:right}
+
+/* ── Form ── */
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;color:#aaa;margin-bottom:7px}
+.form-group input,.form-group textarea,.form-group select{
+  width:100%;background:#1e1e1e;border:1px solid #444;border-radius:7px;
+  padding:11px 13px;color:var(--white);font-size:14px;font-family:inherit;outline:none
+}
+.form-group input:focus,.form-group textarea:focus{border-color:var(--gold)}
+
+/* ── Table ── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:900px}
+thead th{background:#1a1a1a;color:var(--gold);padding:10px 12px;text-align:left;white-space:nowrap;border-bottom:2px solid var(--gold)}
+tbody tr{border-bottom:1px solid var(--border)}
+tbody tr:hover{background:#1e1e1e}
+tbody td{padding:10px 12px;color:#ddd;vertical-align:middle;white-space:nowrap}
+.status-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.status-pending{background:#2d1e00;color:#f0a500;border:1px solid #6b4500}
+.status-confirmed{background:#0d2d1a;color:#27ae60;border:1px solid #1a5c36}
+.status-cancelled{background:#2d0d0d;color:#e74c3c;border:1px solid #6b1a1a}
+
+/* ── Filter bar ── */
+.filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.filter-bar input,.filter-bar select{background:#1e1e1e;border:1px solid #444;border-radius:7px;padding:9px 12px;color:var(--white);font-size:13px;outline:none}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--gold)}
+
+/* ── Category chart ── */
+.cat-list{display:flex;flex-direction:column;gap:8px}
+.cat-row{display:flex;align-items:center;gap:10px}
+.cat-name{font-size:13px;color:#ccc;width:200px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-bar-bg{flex:1;background:#333;border-radius:10px;height:8px;overflow:hidden}
+.cat-bar-fill{background:var(--gold);height:100%;border-radius:10px;transition:width .4s}
+.cat-count{font-size:13px;color:var(--gold);min-width:30px;text-align:right}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:7px;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .2s;font-family:inherit}
+.btn-gold{background:var(--gold);color:#111}
+.btn-gold:hover{background:var(--gold-b)}
+.btn-outline{background:transparent;color:var(--gold);border:2px solid var(--gold)}
+.btn-outline:hover{background:var(--gold);color:#111}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-green{background:var(--green);color:#fff}
+.btn-red{background:var(--red);color:#fff}
+
+/* ── Alerts ── */
+.alert{padding:11px 15px;border-radius:7px;font-size:13px;margin-bottom:14px}
+.alert-ok{background:#0d2d1a;border:1px solid var(--green);color:#5dde8a}
+.alert-err{background:#2d0d0d;border:1px solid var(--red);color:#ff8080}
+
+.hidden{display:none!important}
+.loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:999}
+.loading-overlay.show{display:flex}
+.spinner{width:44px;height:44px;border:4px solid #333;border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+
+<!-- Login Screen -->
+<div class="login-wrap" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">⚔</div>
+    <div class="login-title">武士盃後台管理</div>
+    <div class="login-sub">WARRIORS CUP 2026 Admin Panel</div>
+    <input type="password" id="passwordInput" placeholder="請輸入管理員密碼" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn btn-gold" style="width:100%" onclick="doLogin()">登入</button>
+    <div id="loginErr" class="alert alert-err hidden" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- Main App (hidden until login) -->
+<div id="mainApp" class="hidden">
+
+  <header>
+    <div class="header-left">
+      <div class="logo">⚔ WARRIORS CUP 後台管理</div>
+      <div class="sub">第二屆武士盃全國羽球錦標賽</div>
+    </div>
+    <div class="header-right" onclick="doLogout()">登出</div>
+  </header>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="nav-item active" onclick="showTab('dashboard')" id="nav-dashboard">📊 報名概覽</div>
+      <div class="nav-item" onclick="showTab('progress')" id="nav-progress">📢 進度公告</div>
+      <div class="nav-item" onclick="showTab('registrations')" id="nav-registrations">📋 報名名單</div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- ===== Dashboard ===== -->
+      <div id="tab-dashboard">
+        <div id="dashAlert"></div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-num" id="stat-total">—</div>
+            <div class="stat-label">總報名組數</div>
+            <div class="stat-sub">上限 750 組</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="stat-confirmed" style="color:var(--green)">—</div>
+            <div class="stat-label">已確認（匯款）</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="stat-pending" style="color:#f0a500">—</div>
+            <div class="stat-label">待確認</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="stat-pct" style="color:var(--gold)">—</div>
+            <div class="stat-label">目前發布進度</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">各組別報名人數</div>
+          <div class="cat-list" id="catList"><div style="color:#666">載入中...</div></div>
+        </div>
+      </div>
+
+      <!-- ===== Progress Editor ===== -->
+      <div id="tab-progress" class="hidden">
+        <div class="card">
+          <div class="card-title">📢 報名進度公告</div>
+          <p style="font-size:13px;color:#aaa;margin-bottom:18px">
+            設定後，報名網站首頁會顯示此進度條與公告訊息，讓欲報名的球友了解目前報名狀況。
+          </p>
+
+          <div id="progressAlert"></div>
+
+          <div class="form-group">
+            <label>報名進度（%）</label>
+            <div class="range-wrap">
+              <input type="range" id="pctRange" min="0" max="100" value="0" oninput="onRangeChange()">
+              <div class="range-val" id="pctRangeVal">0%</div>
+            </div>
+          </div>
+
+          <div class="progress-preview">
+            <div style="font-size:12px;color:#666;margin-bottom:6px">預覽效果</div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="previewBar" style="width:0%"></div></div>
+          </div>
+
+          <div class="form-group">
+            <label>公告訊息</label>
+            <textarea id="progressMsg" rows="3" placeholder="例：目前報名已達 60%，名額有限請儘早報名！"></textarea>
+          </div>
+
+          <div style="font-size:12px;color:#666;margin-bottom:16px" id="progressUpdatedAt"></div>
+
+          <button class="btn btn-gold" onclick="saveProgress()">💾 儲存並發布公告</button>
+        </div>
+      </div>
+
+      <!-- ===== Registration List ===== -->
+      <div id="tab-registrations" class="hidden">
+        <div class="card">
+          <div class="card-title">📋 報名名單</div>
+
+          <div class="filter-bar">
+            <input type="text" id="searchInput" placeholder="搜尋姓名 / 編號 / 電話..." oninput="filterTable()">
+            <select id="filterCategory" onchange="filterTable()">
+              <option value="">全部組別</option>
+            </select>
+            <select id="filterStatus" onchange="filterTable()">
+              <option value="">全部狀態</option>
+              <option value="pending">待確認</option>
+              <option value="confirmed">已確認</option>
+              <option value="cancelled">已取消</option>
+            </select>
+            <button class="btn btn-outline" onclick="loadRegistrations()">🔄 重新整理</button>
+          </div>
+
+          <div id="listAlert"></div>
+
+          <div class="table-wrap">
+            <table id="regTable">
+              <thead>
+                <tr>
+                  <th>報名編號</th>
+                  <th>時間</th>
+                  <th>組別</th>
+                  <th>項目</th>
+                  <th>選手1</th>
+                  <th>選手2</th>
+                  <th>聯絡人</th>
+                  <th>電話</th>
+                  <th>費用</th>
+                  <th>匯款五碼</th>
+                  <th>清寒減免</th>
+                  <th>狀態</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="regTableBody">
+                <tr><td colspan="13" style="text-align:center;color:#666;padding:30px">請點選「重新整理」載入資料</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="font-size:13px;color:#666;margin-top:12px">
+            顯示 <span id="showCount">0</span> / <span id="totalCount">0</span> 筆
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /layout -->
+</div><!-- /mainApp -->
+
+<script>
+// ================================================================
+// ★ 填入你的 Google Apps Script 部署 URL
+// ================================================================
+const API_URL = 'https://script.google.com/macros/s/AKfycbzwU-FoWqJV784E7c1PbTS1byN2jLT3_ILIXqlnvicLoPPoyOCrCMMaD33m4vjOpe5C/exec';
+
+let adminPassword = '';
+let allRows = [], allHeaders = [];
+
+// ================================================================
+// Login / Logout
+// ================================================================
+async function doLogin() {
+  const pw = document.getElementById('passwordInput').value;
+  if (!pw) return;
+  showLoading(true);
+  try {
+    const r = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action:'getRegistrations', payload:{ password:pw } })
+    });
+    const d = await r.json();
+    if (d.success) {
+      adminPassword = pw;
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('mainApp').classList.remove('hidden');
+      allRows    = d.rows    || [];
+      allHeaders = d.headers || [];
+      renderDashboard(d);
+      loadProgress();
+    } else {
+      const errEl = document.getElementById('loginErr');
+      errEl.textContent = '❌ ' + (d.message || '密碼錯誤');
+      errEl.classList.remove('hidden');
+    }
+  } catch(e) {
+    document.getElementById('loginErr').textContent = '⚠️ 無法連線，請檢查 API URL 設定。';
+    document.getElementById('loginErr').classList.remove('hidden');
+  } finally { showLoading(false); }
+}
+
+function doLogout() {
+  adminPassword = '';
+  allRows = []; allHeaders = [];
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('mainApp').classList.add('hidden');
+  document.getElementById('passwordInput').value = '';
+}
+
+// ================================================================
+// Tab Navigation
+// ================================================================
+function showTab(tab) {
+  ['dashboard','progress','registrations'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('hidden', t !== tab);
+    document.getElementById('nav-'+t).classList.toggle('active', t === tab);
+  });
+  if (tab === 'registrations') renderTable(allRows);
+}
+
+// ================================================================
+// Dashboard
+// ================================================================
+function renderDashboard(d) {
+  const rows = d.rows || [];
+  const total     = rows.length;
+  const confirmed = rows.filter(r => r[25] === 'confirmed').length;
+  const pending   = rows.filter(r => r[25] === 'pending').length;
+
+  document.getElementById('stat-total').textContent     = total;
+  document.getElementById('stat-confirmed').textContent = confirmed;
+  document.getElementById('stat-pending').textContent   = pending;
+
+  // Category breakdown
+  const byCategory = d.byCategory || {};
+  const maxVal     = Math.max(...Object.values(byCategory), 1);
+  const sorted     = Object.entries(byCategory).sort((a,b) => b[1]-a[1]);
+
+  const catListEl = document.getElementById('catList');
+  catListEl.innerHTML = sorted.map(([cat, count]) => `
+    <div class="cat-row">
+      <div class="cat-name" title="${cat}">${cat}</div>
+      <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:${count/maxVal*100}%"></div></div>
+      <div class="cat-count">${count}</div>
+    </div>
+  `).join('') || '<div style="color:#666">尚無報名資料</div>';
+}
+
+// ================================================================
+// Progress
+// ================================================================
+async function loadProgress() {
+  try {
+    const r = await fetch(`${API_URL}?action=getProgress`);
+    const d = await r.json();
+    if (d.success && d.data) {
+      const p = d.data;
+      document.getElementById('pctRange').value       = p.percentage;
+      document.getElementById('pctRangeVal').textContent = p.percentage + '%';
+      document.getElementById('previewBar').style.width   = p.percentage + '%';
+      document.getElementById('progressMsg').value        = p.message;
+      document.getElementById('progressUpdatedAt').textContent =
+        p.updatedAt ? '最後更新：' + p.updatedAt : '';
+      document.getElementById('stat-pct').textContent = p.percentage + '%';
+    }
+  } catch(e) {}
+}
+
+function onRangeChange() {
+  const val = document.getElementById('pctRange').value;
+  document.getElementById('pctRangeVal').textContent   = val + '%';
+  document.getElementById('previewBar').style.width = val + '%';
+}
+
+async function saveProgress() {
+  const pct = parseInt(document.getElementById('pctRange').value);
+  const msg = document.getElementById('progressMsg').value.trim();
+  showLoading(true);
+  try {
+    const r = await fetch(API_URL, {
+      method:'POST',
+      body: JSON.stringify({ action:'updateProgress', payload:{ password:adminPassword, percentage:pct, message:msg } })
+    });
+    const d = await r.json();
+    const alertEl = document.getElementById('progressAlert');
+    if (d.success) {
+      alertEl.className = 'alert alert-ok'; alertEl.textContent = '✅ ' + d.message;
+      loadProgress();
+    } else {
+      alertEl.className = 'alert alert-err'; alertEl.textContent = '❌ ' + d.message;
+    }
+    alertEl.classList.remove('hidden');
+    setTimeout(() => alertEl.classList.add('hidden'), 4000);
+  } catch(e) {} finally { showLoading(false); }
+}
+
+// ================================================================
+// Registration List
+// ================================================================
+async function loadRegistrations() {
+  showLoading(true);
+  try {
+    const r = await fetch(API_URL, {
+      method:'POST',
+      body: JSON.stringify({ action:'getRegistrations', payload:{ password:adminPassword } })
+    });
+    const d = await r.json();
+    if (d.success) {
+      allRows    = d.rows    || [];
+      allHeaders = d.headers || [];
+      renderDashboard(d);
+      renderTable(allRows);
+      populateCategoryFilter(d.byCategory || {});
+    } else {
+      showListAlert('❌ ' + d.message, 'err');
+    }
+  } catch(e) { showListAlert('⚠️ 載入失敗，請重試。', 'err'); }
+  finally { showLoading(false); }
+}
+
+function populateCategoryFilter(byCategory) {
+  const sel = document.getElementById('filterCategory');
+  sel.innerHTML = '<option value="">全部組別</option>';
+  Object.keys(byCategory).sort().forEach(c => {
+    const o = document.createElement('option'); o.value = c; o.textContent = c;
+    sel.appendChild(o);
+  });
+}
+
+// Col indices (0-based): 0=time, 1=regId, 2=category, 3=event,
+//   4=p1name, 5=p1id, 6=p1bday, 7=p1alevel,
+//   8=p2name, 9=p2id, 10=p2bday, 11=p2alevel,
+//   12=p3name, 13=p3id, 14=p3bday,
+//   15=teamName, 16=teamPlayers,
+//   17=contactName, 18=contactPhone, 19=email, 20=school,
+//   21=poverty, 22=fee, 23=transferCode, 24=notes, 25=status
+
+function renderTable(rows) {
+  const tbody = document.getElementById('regTableBody');
+  document.getElementById('totalCount').textContent = allRows.length;
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:#666;padding:30px">尚無符合條件的報名資料</td></tr>';
+    document.getElementById('showCount').textContent = 0;
+    return;
+  }
+
+  document.getElementById('showCount').textContent = rows.length;
+  tbody.innerHTML = rows.map((r, ri) => {
+    const status  = r[25] || 'pending';
+    const badgeCls = `status-badge status-${status}`;
+    const badgeTxt = {pending:'待確認', confirmed:'已確認', cancelled:'已取消'}[status] || status;
+    const regId   = r[1] || '';
+    const poverty = r[21] === '是' ? '✅' : '';
+
+    return `<tr>
+      <td style="font-family:monospace;color:var(--gold)">${regId}</td>
+      <td style="font-size:12px;color:#888">${String(r[0]).slice(0,16)}</td>
+      <td>${r[2]||''}</td>
+      <td>${r[3]||''}</td>
+      <td>${r[4]||''}</td>
+      <td>${r[8]||''}</td>
+      <td>${r[17]||''}</td>
+      <td>${r[18]||''}</td>
+      <td style="color:var(--gold)">$${Number(r[22]||0).toLocaleString()}</td>
+      <td style="font-family:monospace;letter-spacing:3px">${r[23]||''}</td>
+      <td style="text-align:center">${poverty}</td>
+      <td><span class="${badgeCls}">${badgeTxt}</span></td>
+      <td>
+        <button class="btn btn-sm btn-green" onclick="updateStatus('${regId}','confirmed')">確認</button>
+        <button class="btn btn-sm btn-red" style="margin-left:4px" onclick="updateStatus('${regId}','cancelled')">取消</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterTable() {
+  const q    = document.getElementById('searchInput').value.toLowerCase();
+  const cat  = document.getElementById('filterCategory').value;
+  const stat = document.getElementById('filterStatus').value;
+
+  const filtered = allRows.filter(r => {
+    if (cat  && r[2] !== cat)  return false;
+    if (stat && r[25] !== stat) return false;
+    if (q) {
+      const searchable = [r[1], r[4], r[8], r[17], r[18]].join(' ').toLowerCase();
+      if (!searchable.includes(q)) return false;
+    }
+    return true;
+  });
+  renderTable(filtered);
+}
+
+async function updateStatus(regId, status) {
+  const label = {confirmed:'確認匯款', cancelled:'取消報名'}[status];
+  if (!confirm(`確定要將 ${regId} 設為「${label}」？`)) return;
+  showLoading(true);
+  try {
+    const r = await fetch(API_URL, {
+      method:'POST',
+      body: JSON.stringify({ action:'updateStatus', payload:{ password:adminPassword, regId, status } })
+    });
+    const d = await r.json();
+    if (d.success) {
+      // Update local data
+      const idx = allRows.findIndex(r => r[1] === regId);
+      if (idx >= 0) allRows[idx][25] = status;
+      filterTable();
+      showListAlert('✅ 狀態已更新', 'ok');
+    } else {
+      showListAlert('❌ ' + d.message, 'err');
+    }
+  } catch(e) { showListAlert('⚠️ 更新失敗', 'err'); }
+  finally { showLoading(false); }
+}
+
+function showListAlert(msg, type) {
+  const el = document.getElementById('listAlert');
+  el.className = `alert alert-${type==='ok'?'ok':'err'}`;
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 4000);
+}
+
+function showLoading(s) { document.getElementById('loadingOverlay').classList.toggle('show',s); }
+</script>
+</body>
+</html>

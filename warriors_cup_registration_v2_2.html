@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>武士盃 WARRIORS CUP 2026 — 線上報名</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C9A03C;--gold-b:#E8C96A;--gold-d:#8B6914;--gold-bg:#FFF8E1;
+  --black:#111;--dark:#1A1A1A;--card:#242424;--border:#333;
+  --white:#fff;--gray:#888;--light:#f5f5f5;--red:#e74c3c;--green:#27ae60;
+}
+body{font-family:'Noto Sans TC','Arial',sans-serif;background:var(--dark);color:var(--white);min-height:100vh;line-height:1.6}
+a{color:var(--gold)}
+
+header{background:var(--black);border-bottom:2px solid var(--gold);padding:14px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100}
+.logo-text{font-size:20px;font-weight:900;color:var(--gold);letter-spacing:2px}
+.logo-sub{font-size:12px;color:#aaa;margin-top:2px}
+
+#progress-banner{background:var(--black);border-bottom:1px solid #333;padding:10px 24px;display:none}
+.progress-wrap{max-width:800px;margin:0 auto}
+.progress-label{display:flex;justify-content:space-between;font-size:13px;color:var(--gray);margin-bottom:6px}
+.progress-bar-bg{background:#333;border-radius:20px;height:10px;overflow:hidden}
+.progress-bar-fill{background:linear-gradient(90deg,var(--gold-d),var(--gold-b));height:100%;border-radius:20px;transition:width .6s}
+.progress-msg{font-size:13px;color:var(--gold);margin-top:6px;text-align:center}
+
+main{max-width:820px;margin:0 auto;padding:28px 16px 80px}
+
+/* Steps */
+.steps{display:flex;align-items:center;margin-bottom:32px;overflow-x:auto;padding-bottom:6px}
+.step{display:flex;flex-direction:column;align-items:center;flex:1;min-width:52px}
+.step-dot{width:30px;height:30px;border-radius:50%;background:#333;border:2px solid #444;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#666;transition:all .3s}
+.step.active .step-dot{background:var(--gold);border-color:var(--gold);color:var(--dark)}
+.step.done .step-dot{background:var(--gold-d);border-color:var(--gold-d);color:#fff}
+.step-label{font-size:11px;color:#666;margin-top:5px;text-align:center;white-space:nowrap}
+.step.active .step-label,.step.done .step-label{color:var(--gold)}
+.step-line{flex:1;height:2px;background:#333;min-width:8px}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:18px}
+.card-title{font-size:18px;font-weight:700;color:var(--gold);margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+
+/* Forms */
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:13px;color:#ccc;margin-bottom:7px;font-weight:500}
+.form-group label .req{color:var(--gold);margin-left:3px}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;background:#2c2c2c;border:1px solid #444;border-radius:8px;
+  padding:11px 13px;color:var(--white);font-size:14px;font-family:inherit;transition:border-color .2s;outline:none
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--gold)}
+.form-group input.error,.form-group select.error{border-color:var(--red)}
+.form-group .hint{font-size:11px;color:var(--gray);margin-top:5px}
+.form-group .err-msg{font-size:12px;color:var(--red);margin-top:4px;display:none}
+.form-group .err-msg.show{display:block}
+select option{background:var(--dark)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:520px){.form-row,.form-row-3{grid-template-columns:1fr}}
+
+/* Type cards */
+.type-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:10px}
+@media(min-width:600px){.type-grid{grid-template-columns:repeat(4,1fr)}}
+.type-card{background:#1e1e1e;border:2px solid #3a3a3a;border-radius:10px;padding:16px 10px;text-align:center;cursor:pointer;transition:all .25s}
+.type-card:hover{border-color:var(--gold);background:#252525}
+.type-card.selected{border-color:var(--gold);background:var(--gold-bg)}
+.type-card .type-icon{font-size:28px;margin-bottom:8px}
+.type-card .type-name{font-size:13px;font-weight:700;color:var(--white)}
+.type-card.selected .type-name{color:var(--dark)}
+.type-card .type-desc{font-size:11px;color:var(--gray);margin-top:4px}
+.type-card.selected .type-desc{color:#666}
+
+/* Player blocks */
+.player-block{background:#1e1e1e;border:1px solid #3a3a3a;border-radius:10px;padding:18px;margin-bottom:14px}
+.player-block-title{font-size:13px;font-weight:700;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.player-block-title::before{content:'⚔'}
+
+/* Shirt size select — custom highlight */
+.size-select{font-family:monospace;font-size:16px;font-weight:700;text-align:center;letter-spacing:2px}
+
+/* Checkboxes */
+.check-item{display:flex;align-items:flex-start;gap:12px;padding:12px;background:#1e1e1e;border:1px solid #3a3a3a;border-radius:8px;cursor:pointer;margin-bottom:10px}
+.check-item:hover{border-color:var(--gold)}
+.check-item input[type=checkbox]{width:17px;height:17px;accent-color:var(--gold);flex-shrink:0;margin-top:2px;cursor:pointer}
+.check-item-text .check-title{font-size:13px;font-weight:600}
+.check-item-text .check-desc{font-size:11px;color:var(--gray);margin-top:3px}
+
+/* Duplicate check */
+.dup-check{font-size:12px;margin-top:5px}
+.dup-ok{color:var(--green)}.dup-err{color:var(--red)}.dup-checking{color:var(--gray)}
+
+/* Fee */
+.fee-box{background:var(--black);border:2px solid var(--gold);border-radius:10px;padding:18px;text-align:center;margin:16px 0}
+.fee-amount{font-size:36px;font-weight:900;color:var(--gold)}
+.fee-label{font-size:13px;color:var(--gray);margin-top:3px}
+.fee-items{text-align:left;margin-top:14px;font-size:13px;color:#bbb}
+.fee-items li{padding:6px 0;border-bottom:1px solid #2a2a2a;display:flex;justify-content:space-between;gap:8px}
+.fee-items li:last-child{border-bottom:none;color:var(--gold);font-weight:700}
+
+/* Payment */
+.payment-info{background:#0d1a0d;border:1px solid #27ae60;border-radius:10px;padding:18px;margin:14px 0}
+.payment-info .pi-title{color:#27ae60;font-weight:700;margin-bottom:10px;font-size:14px}
+.payment-info .pi-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a2e1a;font-size:13px}
+.payment-info .pi-key{color:#aaa}
+.payment-info .pi-val{color:var(--white);font-weight:600;font-family:monospace}
+
+/* Summary table */
+.summary-table{width:100%;border-collapse:collapse;font-size:13px}
+.summary-table td{padding:9px 10px;border-bottom:1px solid var(--border)}
+.summary-table td:first-child{color:var(--gray);width:36%;white-space:nowrap}
+
+/* Alerts */
+.alert{padding:11px 14px;border-radius:8px;font-size:13px;margin-bottom:14px}
+.alert-info{background:#1a2535;border:1px solid #2980b9;color:#74b9ff}
+.alert-warn{background:#2d1a00;border:1px solid var(--gold-d);color:var(--gold)}
+.alert-red{background:#2d0d0d;border:1px solid var(--red);color:#ff6b6b}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 22px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .2s;font-family:inherit}
+.btn-gold{background:var(--gold);color:var(--dark)}
+.btn-gold:hover{background:var(--gold-b)}
+.btn-outline{background:transparent;color:var(--gold);border:2px solid var(--gold)}
+.btn-outline:hover{background:var(--gold);color:var(--dark)}
+.btn-full{width:100%;justify-content:center}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-red{background:#2d0d0d;color:#ff6b6b;border:1px solid var(--red)}
+.btn-row{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── BATCH (團報) specific ── */
+.batch-entry{background:var(--card);border:2px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden;transition:border-color .2s}
+.batch-entry.entry-valid{border-color:var(--gold-d)}
+.batch-entry-header{padding:14px 18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;background:#1e1e1e}
+.batch-entry-header:hover{background:#252525}
+.entry-title{font-size:14px;font-weight:700;color:var(--gold)}
+.entry-subtitle{font-size:12px;color:var(--gray);margin-top:2px}
+.batch-entry-body{padding:18px;border-top:1px solid var(--border)}
+.batch-entry-body.collapsed{display:none}
+.entry-badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;background:#1a1400;color:var(--gold);border:1px solid var(--gold-d)}
+
+.batch-fee-summary{background:var(--black);border:1px solid var(--border);border-radius:10px;padding:16px;margin:16px 0}
+.batch-fee-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid #2a2a2a;color:#ccc}
+.batch-fee-row:last-child{border-bottom:none;color:var(--gold);font-weight:700;font-size:16px;padding-top:10px}
+
+.add-entry-btn{width:100%;padding:14px;border:2px dashed #444;border-radius:10px;background:transparent;color:#666;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.add-entry-btn:hover{border-color:var(--gold);color:var(--gold);background:#1e1600}
+
+/* Success */
+.success-screen{text-align:center;padding:36px 0}
+.success-icon{font-size:60px;margin-bottom:16px}
+.success-id{display:inline-block;background:var(--black);border:2px solid var(--gold);border-radius:10px;padding:12px 24px;font-size:22px;font-weight:900;color:var(--gold);letter-spacing:3px;margin:14px 4px}
+.success-steps{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;text-align:left;margin-top:18px}
+.success-steps ol{padding-left:18px;color:#bbb;font-size:13px}
+.success-steps ol li{margin-bottom:8px}
+
+.hidden{display:none!important}
+.loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:999}
+.loading-overlay.show{display:flex}
+.spinner{width:46px;height:46px;border:4px solid #333;border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{background:var(--black);border-top:1px solid var(--border);padding:18px 24px;text-align:center;font-size:12px;color:var(--gray)}
+</style>
+</head>
+<body>
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+
+<header>
+  <div>
+    <div class="logo-text">⚔ WARRIORS CUP 2026</div>
+    <div class="logo-sub">第二屆武士盃全國羽球錦標賽 — 線上報名</div>
+  </div>
+</header>
+
+<div id="progress-banner">
+  <div class="progress-wrap">
+    <div class="progress-label"><span>目前報名進度</span><span id="pct-text">0%</span></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="pct-bar" style="width:0%"></div></div>
+    <div class="progress-msg" id="pct-msg"></div>
+  </div>
+</div>
+
+<main>
+  <!-- Step indicator (hidden for 團報) -->
+  <div class="steps" id="stepIndicator">
+    <div class="step active" data-step="1"><div class="step-dot">1</div><div class="step-label">類型</div></div>
+    <div class="step-line"></div>
+    <div class="step" data-step="2"><div class="step-dot">2</div><div class="step-label">組別</div></div>
+    <div class="step-line"></div>
+    <div class="step" data-step="3"><div class="step-dot">3</div><div class="step-label">選手</div></div>
+    <div class="step-line"></div>
+    <div class="step" data-step="4"><div class="step-dot">4</div><div class="step-label">聯絡</div></div>
+    <div class="step-line"></div>
+    <div class="step" data-step="5"><div class="step-dot">5</div><div class="step-label">付款</div></div>
+  </div>
+
+  <!-- ── STEP 1: 類型 ── -->
+  <div id="step1">
+    <div class="card">
+      <div class="card-title">選擇報名類型</div>
+      <div class="alert alert-warn">⚠ 總組數上限 <strong>750 組</strong>，額滿即停止。截止：<strong>2026/08/07 18:00</strong></div>
+      <div class="type-grid">
+        <div class="type-card" data-type="個人賽"><div class="type-icon">🏸</div><div class="type-name">個人賽</div><div class="type-desc">單打 / 雙打 / 混雙</div></div>
+        <div class="type-card" data-type="3v3熱血組"><div class="type-icon">🔥</div><div class="type-name">3v3 熱血組</div><div class="type-desc">三人混合賽</div></div>
+        <div class="type-card" data-type="團體賽"><div class="type-icon">🏆</div><div class="type-name">團體賽</div><div class="type-desc">三點雙打制</div></div>
+        <div class="type-card" data-type="團報"><div class="type-icon">📋</div><div class="type-name">團報</div><div class="type-desc">多組一次報名</div></div>
+      </div>
+      <div class="alert alert-info hidden" id="type-hint-banner"></div>
+      <div class="btn-row"><button class="btn btn-gold" onclick="onStep1Next()" id="step1Next" disabled>下一步 →</button></div>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: 組別 & 項目 ── -->
+  <div id="step2" class="hidden">
+    <div class="card">
+      <div class="card-title">選擇組別與項目</div>
+      <div class="form-group">
+        <label>組別 <span class="req">*</span></label>
+        <select id="sel-category" onchange="onCategoryChange()"><option value="">— 請選擇組別 —</option></select>
+        <div class="hint" id="category-hint"></div>
+      </div>
+      <div class="form-group hidden" id="event-group">
+        <label>項目 <span class="req">*</span></label>
+        <select id="sel-event" onchange="onEventChange()"><option value="">— 請選擇項目 —</option></select>
+      </div>
+      <div class="alert alert-info hidden" id="category-note"></div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="goStep(1)">← 上一步</button>
+        <button class="btn btn-gold" onclick="goStep(3)" id="step2Next" disabled>下一步 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: 選手資料 ── -->
+  <div id="step3" class="hidden">
+    <div class="card">
+      <div class="card-title">填寫選手資料</div>
+      <div id="players-container"></div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="goStep(2)">← 上一步</button>
+        <button class="btn btn-gold" onclick="validateStep3()">下一步 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 4: 聯絡資訊 ── -->
+  <div id="step4" class="hidden">
+    <div class="card">
+      <div class="card-title">聯絡資訊</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>聯絡人姓名 <span class="req">*</span></label>
+          <input type="text" id="contactName" placeholder="報名代表人">
+          <div class="err-msg" id="err-contactName">請填寫聯絡人</div>
+        </div>
+        <div class="form-group">
+          <label>聯絡電話 <span class="req">*</span></label>
+          <input type="tel" id="contactPhone" placeholder="09xxxxxxxx">
+          <div class="err-msg" id="err-contactPhone">請填寫有效手機號碼</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" id="contactEmail" placeholder="用於接收確認通知">
+        <div class="err-msg" id="err-contactEmail">請填寫有效 Email</div>
+      </div>
+      <div class="form-group">
+        <label>隊名 / 單位</label>
+        <input type="text" id="unitName" placeholder="例：XX 羽球俱樂部、XX 公司（選填）">
+        <div class="hint">填寫所屬俱樂部、公司或學校名稱（選填）</div>
+      </div>
+      <div class="form-group" id="school-group" style="display:none">
+        <label>學校名稱</label>
+        <input type="text" id="schoolName" placeholder="請填寫就讀學校（選填）">
+        <div class="hint" style="color:#ff9966">⚠ 個人報名之成績不列入小武士精神總錦標積分計算。學校如需計入積分，請改用「📋 團報」統一報名。</div>
+      </div>
+      <div class="form-group" id="team-name-group" style="display:none">
+        <label>隊伍名稱 <span class="req">*</span></label>
+        <input type="text" id="teamName" placeholder="團體賽隊伍名稱">
+      </div>
+      <div class="form-group">
+        <label>備註</label>
+        <textarea id="notes" rows="2" placeholder="其他說明（選填）"></textarea>
+      </div>
+      <label class="check-item" id="poverty-check-wrap" style="display:none">
+        <input type="checkbox" id="povertyReduction">
+        <div class="check-item-text">
+          <div class="check-title">申請清寒減免（報名費 50% 折扣）</div>
+          <div class="check-desc">持清寒證明之在學學生適用，請於賽事現場出示證明核實後退款</div>
+        </div>
+      </label>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="goStep(3)">← 上一步</button>
+        <button class="btn btn-gold" onclick="validateStep4()">下一步 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 5: 確認 & 付款 ── -->
+  <div id="step5" class="hidden">
+    <div class="card">
+      <div class="card-title">確認報名資訊</div>
+      <table class="summary-table" id="summary-table"></table>
+    </div>
+    <div class="card">
+      <div class="card-title">費用與付款</div>
+      <div class="fee-box">
+        <div class="fee-amount" id="fee-display">$0</div>
+        <div class="fee-label">報名費用（新台幣）</div>
+        <ul class="fee-items" id="fee-items"></ul>
+      </div>
+      <div class="payment-info">
+        <div class="pi-title">💳 匯款資訊</div>
+        <div class="pi-row"><span class="pi-key">銀行</span><span class="pi-val">808 玉山銀行</span></div>
+        <div class="pi-row"><span class="pi-key">帳號</span><span class="pi-val">0749979188406</span></div>
+        <div class="pi-row"><span class="pi-key">截止</span><span class="pi-val">2026/08/07 18:00</span></div>
+      </div>
+      <div class="alert alert-warn">✋ 未完成繳費視同未報名。名單公告前可退費（扣手續費 $200）。</div>
+      <div class="form-group">
+        <label>匯款後五碼 <span class="req">*</span></label>
+        <input type="text" id="transferCode" maxlength="5" placeholder="匯款帳號後五碼" pattern="[0-9]{5}" style="font-size:22px;letter-spacing:6px;font-weight:700;font-family:monospace;text-align:center">
+        <div class="err-msg" id="err-transferCode">請填寫 5 位數字</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="goStep(4)">← 上一步</button>
+        <button class="btn btn-gold btn-full" onclick="submitRegistration()" id="submitBtn" style="margin-top:8px">⚔ 確認送出報名</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════ -->
+  <!-- ── 團報專區 ──────────────────────── -->
+  <!-- ════════════════════════════════════ -->
+  <div id="batchSection" class="hidden">
+    <!-- 聯絡資訊 -->
+    <div class="card">
+      <div class="card-title">📋 團報 — 聯絡與單位資訊</div>
+      <div class="alert alert-info">代表人填寫一次，所有報名項目共用同一組聯絡資訊與匯款資訊。</div>
+      <div class="alert" style="background:#111f08;border:1px solid #4a7a00;color:#9fcf5a;font-size:13px">
+        🏫 <strong>小武士精神總錦標</strong>：「學校名稱 / 單位」請填寫完整校名，學生選手成績才會納入積分計算。
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>代表人姓名 <span class="req">*</span></label>
+          <input type="text" id="b-contactName" placeholder="填寫代表人真實姓名">
+          <div class="err-msg" id="err-b-contactName">請填寫代表人姓名</div>
+        </div>
+        <div class="form-group">
+          <label>聯絡電話 <span class="req">*</span></label>
+          <input type="tel" id="b-contactPhone" placeholder="09xxxxxxxx">
+          <div class="err-msg" id="err-b-contactPhone">請填寫有效手機號碼</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" id="b-contactEmail" placeholder="接收報名確認">
+        <div class="err-msg" id="err-b-contactEmail">請填寫有效 Email</div>
+      </div>
+      <div class="form-group">
+        <label>學校名稱 / 單位 <span class="req">*</span></label>
+        <input type="text" id="b-unitName" placeholder="例：XX 國小、XX 羽球俱樂部">
+        <div class="err-msg" id="err-b-unitName">請填寫學校名稱或單位</div>
+        <div class="hint">🏫 學校統一報名請填寫<strong>完整校名</strong>，系統將以此計算小武士精神總錦標積分</div>
+      </div>
+      <div class="form-group">
+        <label>備註</label>
+        <textarea id="b-notes" rows="2" placeholder="其他說明（選填）"></textarea>
+      </div>
+    </div>
+
+    <!-- 報名項目列表 -->
+    <div class="card">
+      <div class="card-title">報名項目</div>
+      <div id="batchEntries"></div>
+      <button class="add-entry-btn" onclick="addBatchEntry()">＋ 新增報名項目</button>
+    </div>
+
+    <!-- 費用總計 -->
+    <div class="card">
+      <div class="card-title">費用總計與付款</div>
+      <div class="batch-fee-summary" id="batchFeeSummary">
+        <div style="color:#666;font-size:13px">尚未填寫報名項目</div>
+      </div>
+      <div class="payment-info">
+        <div class="pi-title">💳 匯款資訊（合計一次匯款）</div>
+        <div class="pi-row"><span class="pi-key">銀行</span><span class="pi-val">808 玉山銀行</span></div>
+        <div class="pi-row"><span class="pi-key">帳號</span><span class="pi-val">0749979188406</span></div>
+        <div class="pi-row"><span class="pi-key">截止</span><span class="pi-val">2026/08/07 18:00</span></div>
+      </div>
+      <div class="alert alert-warn">✋ 所有項目合計一次匯款，未完成繳費視同未報名。</div>
+      <div class="form-group">
+        <label>匯款後五碼 <span class="req">*</span></label>
+        <input type="text" id="b-transferCode" maxlength="5" placeholder="匯款帳號後五碼" pattern="[0-9]{5}" style="font-size:22px;letter-spacing:6px;font-weight:700;font-family:monospace;text-align:center">
+        <div class="err-msg" id="err-b-transferCode">請填寫 5 位數字</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="goStep(1)">← 重新選擇類型</button>
+        <button class="btn btn-gold btn-full" onclick="submitBatchRegistration()" id="batchSubmitBtn" style="margin-top:8px">⚔ 確認送出全部報名</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 完成畫面 ── -->
+  <div id="stepDone" class="hidden">
+    <div class="card success-screen">
+      <div class="success-icon">🏆</div>
+      <h2 style="color:var(--gold);font-size:24px">報名成功！</h2>
+      <p style="color:#aaa;margin-top:8px" id="done-label">您的報名編號為</p>
+      <div id="done-regIds"></div>
+      <div class="success-steps">
+        <p style="color:var(--gold);font-weight:700;margin-bottom:10px">📋 後續步驟</p>
+        <ol>
+          <li>於 <strong style="color:#fff">2026/08/07 18:00</strong> 前完成匯款（玉山銀行 0749979188406）</li>
+          <li>修改或問題請聯繫官方 Line：<strong style="color:var(--gold)">@834xlooq</strong></li>
+          <li>報名結果公告：<strong style="color:#fff">2026/08/28 前</strong>（官方網站及 Line）</li>
+          <li>抽籤日期：<strong style="color:#fff">2026/09/11</strong></li>
+        </ol>
+      </div>
+      <div style="margin-top:20px">
+        <a href="https://www.facebook.com/darkwarriorsbmt2025" target="_blank" class="btn btn-outline" style="margin-right:8px">追蹤 FB</a>
+        <button class="btn btn-gold" onclick="location.reload()">繼續報名</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  ⚔ 武士盃籌畫小組 × 快羽會館 &nbsp;|&nbsp; Line：<a href="#">@834xlooq</a> &nbsp;|&nbsp;
+  <a href="https://www.facebook.com/darkwarriorsbmt2025" target="_blank">FB 官方</a>
+</footer>
+
+<script>
+// ★ 填入你的 Google Apps Script 部署 URL
+const API_URL = 'https://script.google.com/macros/s/AKfycbzwU-FoWqJV784E7c1PbTS1byN2jLT3_ILIXqlnvicLoPPoyOCrCMMaD33m4vjOpe5C/exec';
+
+const SIZES = ['XS','S','M','L','XL','2XL','3XL'];
+
+const CATEGORY_DATA = {
+  '個人賽': [
+    { name:'國小中年級（含）以下', events:['男單','女單','男雙','女雙'], isStudent:true, hint:'適用國小中年級以下，可越級不可降級。' },
+    { name:'國小高年級',           events:['男單','女單','男雙','女雙'], isStudent:true, hint:'適用國小高年級學生。' },
+    { name:'國中組',               events:['男單','女單','男雙','女雙'], isStudent:true, hint:'適用國中生，可越級不可降級。' },
+    { name:'大專組',               events:['男單','男雙','女雙','混雙'], isStudent:true, hint:'限大專盃一般組資格選手。', note:'⚠️ 大專組僅限大專盃一般組資格選手報名。' },
+    { name:'競技青年專業組',       events:['男單','男雙','女雙','混雙'], isCompetitive:true, hint:'不限齡，每組限1位A級選手。' },
+    { name:'競技青壯年專業組',     events:['男雙','混雙'], isCompetitive:true, hint:'每位選手需30歲以上，每組限1位A級選手。' },
+    { name:'社會青年組',           events:['男雙','女雙','混雙'], hint:'不限齡，謝絕A級選手（全國甲組/世界排名/BWF巡迴賽）。' },
+    { name:'社會青壯年組',         events:['男雙','女雙','混雙'], hint:'每位選手滿30歲以上，兩人年齡總和65歲以上。' },
+    { name:'壯年組',               events:['男雙','女雙','混雙'], hint:'兩人年齡總和85歲以上，每位需滿40歲，每組限1位A級（需45歲以上）。' },
+  ],
+  '3v3熱血組': [
+    { name:'3v3熱血組', events:['3v3熱血'], isTeam3v3:true, hint:'三人總和60歲以上，每組限1位A級，需有1位女子球員。', note:'每邊三人（二男一女或二女一男）同時上場。' },
+  ],
+  '團體賽': [
+    { name:'競技專業團體組', events:['三點雙打'], isTeam:true, isCompetitive:true, hint:'不限齡，女生可打男雙點，每隊限至多2位A級男性選手。' },
+    { name:'社會青年團體組', events:['三點雙打'], isTeam:true, hint:'不限齡，三點雙打（男雙、女雙、男雙）。' },
+    { name:'社會青壯團體組', events:['三點雙打'], isTeam:true, hint:'每位選手需30歲以上。' },
+    { name:'壯年團體組',     events:['三點雙打'], isTeam:true, hint:'每位選手需30歲以上，每組限2位A級（需45歲以上）。' },
+  ],
+};
+
+// 所有組別扁平列表（供團報使用）
+const ALL_CATEGORIES = [
+  ...CATEGORY_DATA['個人賽'].map(c => ({...c, type:'個人賽'})),
+  ...CATEGORY_DATA['3v3熱血組'].map(c => ({...c, type:'3v3熱血組'})),
+  ...CATEGORY_DATA['團體賽'].map(c => ({...c, type:'團體賽'})),
+];
+
+const TYPE_HINTS = {
+  '團報': '代表人一次填寫多組報名，合計一筆匯款，適合校隊、俱樂部或公司行號集體報名。',
+};
+
+let state = { type:'', category:'', event:'', categoryData:null, playerCount:1, fee:0, step:1 };
+
+// 批次報名狀態
+let batchEntries = [];
+let batchEntryCounter = 0;
+
+// ── Init ──
+window.onload = async () => { await fetchProgress(); };
+
+async function fetchProgress() {
+  try {
+    const r = await fetch(`${API_URL}?action=getProgress`);
+    const d = await r.json();
+    if (d.success && d.data && (d.data.percentage > 0 || d.data.message)) {
+      document.getElementById('progress-banner').style.display = 'block';
+      document.getElementById('pct-text').textContent = d.data.percentage + '%';
+      document.getElementById('pct-bar').style.width  = d.data.percentage + '%';
+      document.getElementById('pct-msg').textContent  = d.data.message;
+    }
+  } catch(e) {}
+}
+
+// ── Step 1 ──
+document.querySelectorAll('.type-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.type = card.dataset.type;
+    document.getElementById('step1Next').disabled = false;
+    const hint = TYPE_HINTS[state.type];
+    const banner = document.getElementById('type-hint-banner');
+    if (hint) { banner.textContent = hint; banner.classList.remove('hidden'); }
+    else banner.classList.add('hidden');
+  });
+});
+
+function onStep1Next() {
+  if (state.type === '團報') {
+    showBatchSection();
+  } else {
+    goStep(2);
+  }
+}
+
+// ── Step navigation ──
+function goStep(n) {
+  if (n === 2) populateCategorySelect();
+  if (n === 3) buildPlayersForm();
+  if (n === 5) buildSummary();
+  updateContextualFields();
+
+  ['step1','step2','step3','step4','step5'].forEach((id, i) => {
+    document.getElementById(id).classList.toggle('hidden', i+1 !== n);
+  });
+  document.getElementById('batchSection').classList.add('hidden');
+  window.scrollTo(0, 0);
+
+  document.querySelectorAll('.step[data-step]').forEach(el => {
+    const s = parseInt(el.dataset.step);
+    el.classList.remove('active','done');
+    if (s < n) el.classList.add('done');
+    else if (s === n) el.classList.add('active');
+  });
+  document.getElementById('stepIndicator').classList.remove('hidden');
+  state.step = n;
+}
+
+// ── Step 2: Category / Event ──
+function populateCategorySelect() {
+  const sel  = document.getElementById('sel-category');
+  const cats = CATEGORY_DATA[state.type] || [];
+  sel.innerHTML = '<option value="">— 請選擇組別 —</option>';
+  cats.forEach(c => {
+    const o = document.createElement('option'); o.value = c.name; o.textContent = c.name; sel.appendChild(o);
+  });
+  document.getElementById('event-group').classList.add('hidden');
+  document.getElementById('category-note').classList.add('hidden');
+  document.getElementById('step2Next').disabled = true;
+  state.category = ''; state.event = '';
+}
+
+function onCategoryChange() {
+  const catName = document.getElementById('sel-category').value;
+  if (!catName) return;
+  const cats = CATEGORY_DATA[state.type] || [];
+  const cat  = cats.find(c => c.name === catName);
+  state.categoryData = cat; state.category = catName;
+  document.getElementById('category-hint').textContent = cat.hint || '';
+
+  const noteEl = document.getElementById('category-note');
+  if (cat.note) { noteEl.textContent = cat.note; noteEl.classList.remove('hidden'); }
+  else noteEl.classList.add('hidden');
+
+  const evSel = document.getElementById('sel-event');
+  evSel.innerHTML = '<option value="">— 請選擇項目 —</option>';
+  cat.events.forEach(ev => { const o = document.createElement('option'); o.value = ev; o.textContent = ev; evSel.appendChild(o); });
+
+  if (cat.isTeam || cat.isTeam3v3) {
+    state.event = cat.events[0]; evSel.value = state.event;
+    document.getElementById('event-group').classList.add('hidden');
+    document.getElementById('step2Next').disabled = false;
+  } else {
+    document.getElementById('event-group').classList.remove('hidden');
+    state.event = ''; document.getElementById('step2Next').disabled = true;
+  }
+}
+function onEventChange() {
+  state.event = document.getElementById('sel-event').value;
+  document.getElementById('step2Next').disabled = !state.event;
+}
+
+// ── Step 3: Players ──
+function buildPlayersForm() {
+  const cat   = state.categoryData;
+  const event = state.event;
+  let count   = cat.isTeam ? 7 : cat.isTeam3v3 ? 3 : ['男雙','女雙','混雙'].includes(event) ? 2 : 1;
+  state.playerCount = count;
+  const container = document.getElementById('players-container');
+  container.innerHTML = '';
+
+  if (cat.isTeam) {
+    container.innerHTML = `<div class="alert alert-info">每組限報 7 人（最少 2 人），未填欄位不計入名單。</div>`;
+  }
+  for (let i = 1; i <= count; i++) {
+    container.appendChild(buildPlayerBlock(i, cat.isTeam ? i <= 2 : true));
+  }
+}
+
+function buildPlayerBlock(idx, required) {
+  const div = document.createElement('div');
+  div.className = 'player-block'; div.id = `player-block-${idx}`;
+  const labels = ['選手 1','選手 2','選手 3','選手 4','選手 5','選手 6','選手 7'];
+  const req = required ? '<span class="req">*</span>' : '';
+  const isStudent = state.categoryData?.isStudent;
+
+  div.innerHTML = `
+    <div class="player-block-title">${labels[idx-1]} ${!required ? '（選填）':''}</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>姓名 ${req}</label>
+        <input type="text" id="p${idx}-name" placeholder="真實姓名">
+        <div class="err-msg" id="err-p${idx}-name">請填寫選手姓名</div>
+      </div>
+      <div class="form-group">
+        <label>${isStudent?'學生證號':'身分證號'} ${req}</label>
+        <input type="text" id="p${idx}-id" placeholder="${isStudent?'學生證號碼':'身分證字號'}" oninput="onIdInput(${idx})">
+        <div class="dup-check" id="dup-${idx}"></div>
+        <div class="err-msg" id="err-p${idx}-id">請填寫證件號碼</div>
+      </div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group">
+        <label>出生年月日 ${req}</label>
+        <input type="date" id="p${idx}-bday">
+      </div>
+      <div class="form-group">
+        <label>紀念衫尺寸 ${req}</label>
+        <select id="p${idx}-size" class="size-select">
+          <option value="">— 選尺寸 —</option>
+          ${SIZES.map(s=>`<option value="${s}">${s}</option>`).join('')}
+        </select>
+        <div class="err-msg" id="err-p${idx}-size">請選擇尺寸</div>
+      </div>
+      <div class="form-group">
+        <label>A 級選手身分</label>
+        <select id="p${idx}-alevel">
+          <option value="no">否（一般選手）</option>
+          <option value="yes">是（A 級選手）</option>
+        </select>
+      </div>
+    </div>`;
+  return div;
+}
+
+let dupTimers = {};
+function onIdInput(idx) {
+  clearTimeout(dupTimers[idx]);
+  const idVal = document.getElementById(`p${idx}-id`).value.trim();
+  const dupEl = document.getElementById(`dup-${idx}`);
+  if (!idVal || !state.category) { dupEl.innerHTML=''; return; }
+  dupEl.innerHTML = '<span class="dup-checking">⏳ 檢查中...</span>';
+  dupTimers[idx] = setTimeout(async () => {
+    try {
+      const params = new URLSearchParams({ action:'checkDuplicate', playerId:idVal, category:state.category, event:state.event||'' });
+      const r = await fetch(`${API_URL}?${params}`);
+      const d = await r.json();
+      dupEl.innerHTML = d.isDuplicate
+        ? '<span class="dup-err">⛔ 此選手已於相同組別項目報名</span>'
+        : '<span class="dup-ok">✅ 可繼續報名</span>';
+    } catch(e) { dupEl.innerHTML=''; }
+  }, 600);
+}
+
+function validateStep3() {
+  const cat = state.categoryData;
+  const required = cat.isTeam ? 2 : state.playerCount;
+  let valid = true;
+  for (let i = 1; i <= required; i++) {
+    const name = document.getElementById(`p${i}-name`)?.value.trim();
+    const id   = document.getElementById(`p${i}-id`)?.value.trim();
+    const size = document.getElementById(`p${i}-size`)?.value;
+    if (!name) { showErr(`err-p${i}-name`); valid=false; } else hideErr(`err-p${i}-name`);
+    if (!id)   { showErr(`err-p${i}-id`);   valid=false; } else hideErr(`err-p${i}-id`);
+    if (!size) { showErr(`err-p${i}-size`);  valid=false; } else hideErr(`err-p${i}-size`);
+  }
+  if (valid) goStep(4);
+}
+
+// ── Step 4: Contact ──
+function validateStep4() {
+  let v = true;
+  const name  = document.getElementById('contactName').value.trim();
+  const phone = document.getElementById('contactPhone').value.trim();
+  const email = document.getElementById('contactEmail').value.trim();
+  if (!name)                               { showErr('err-contactName');  v=false; } else hideErr('err-contactName');
+  if (!/^09\d{8}$/.test(phone))           { showErr('err-contactPhone'); v=false; } else hideErr('err-contactPhone');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('err-contactEmail'); v=false; } else hideErr('err-contactEmail');
+  if (v) goStep(5);
+}
+
+function updateContextualFields() {
+  const cat = state.categoryData;
+  if (!cat) return;
+  document.getElementById('school-group').style.display     = cat.isStudent ? 'block' : 'none';
+  document.getElementById('team-name-group').style.display  = (cat.isTeam||cat.isTeam3v3) ? 'block' : 'none';
+  document.getElementById('poverty-check-wrap').style.display = cat.isStudent ? 'flex' : 'none';
+}
+
+// ── Step 5: Summary & Fee ──
+function buildSummary() {
+  const cat   = state.categoryData;
+  const event = state.event;
+  const rows  = [];
+  rows.push(['報名類型', state.type]);
+  rows.push(['組別', state.category]);
+  if (event && !['三點雙打','3v3熱血'].includes(event)) rows.push(['項目', event]);
+
+  const tname = document.getElementById('teamName').value.trim();
+  if (tname) rows.push(['隊伍名稱', tname]);
+
+  const unit = document.getElementById('unitName').value.trim();
+  if (unit) rows.push(['隊名/單位', unit]);
+
+  const maxP = cat.isTeam ? 7 : state.playerCount;
+  for (let i = 1; i <= maxP; i++) {
+    const name = document.getElementById(`p${i}-name`)?.value.trim();
+    const size = document.getElementById(`p${i}-size`)?.value;
+    if (name) rows.push([`選手${i}`, `${name}　尺寸：${size||'未選'}`]);
+  }
+  rows.push(['聯絡人', document.getElementById('contactName').value.trim()]);
+  rows.push(['電話',   document.getElementById('contactPhone').value.trim()]);
+  rows.push(['Email',  document.getElementById('contactEmail').value.trim()]);
+  const school = document.getElementById('schoolName').value.trim();
+  if (school) rows.push(['學校', school]);
+  if (document.getElementById('povertyReduction').checked)
+    rows.push(['清寒減免', '是（現場核實後退款）']);
+
+  document.getElementById('summary-table').innerHTML = rows.map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+  calcFee(document.getElementById('povertyReduction').checked);
+}
+
+function calcFee(poverty) {
+  const cat   = state.categoryData;
+  const event = state.event;
+  let fee = 0, desc = '';
+  if (cat.isTeam)       { fee = cat.isCompetitive ? 4000 : 3600; desc = cat.isCompetitive ? '競技專業團體組' : '社會團體組'; }
+  else if (cat.isTeam3v3) { fee = 1500; desc = '3v3 熱血組'; }
+  else if (['男單','女單'].includes(event)) { fee = cat.isCompetitive ? 900 : 700; desc = cat.isCompetitive ? '競技組單打' : '一般單打'; }
+  else { fee = 1300; desc = '雙打 / 混雙'; }
+  const orig = fee;
+  if (poverty) fee = Math.floor(fee * 0.5);
+  state.fee = fee;
+  document.getElementById('fee-display').textContent = '$' + fee.toLocaleString();
+  let items = `<li><span>${desc}</span><span>$${orig.toLocaleString()}</span></li>`;
+  if (poverty) items += `<li><span>清寒減免 -50%</span><span>-$${Math.floor(orig*0.5).toLocaleString()}</span></li>`;
+  items += `<li><span>合計</span><span>$${fee.toLocaleString()}</span></li>`;
+  document.getElementById('fee-items').innerHTML = items;
+}
+
+// ── Submit (single) ──
+async function submitRegistration() {
+  const code = document.getElementById('transferCode').value.trim();
+  if (!/^\d{5}$/.test(code)) { showErr('err-transferCode'); return; }
+  hideErr('err-transferCode');
+
+  const cat = state.categoryData;
+  const maxP = cat.isTeam ? 7 : state.playerCount;
+  const payload = {
+    type: state.type, category: state.category, event: state.event, fee: state.fee,
+    transferCode: code,
+    contactName:  document.getElementById('contactName').value.trim(),
+    contactPhone: document.getElementById('contactPhone').value.trim(),
+    email:        document.getElementById('contactEmail').value.trim(),
+    unitName:     document.getElementById('unitName').value.trim(),
+    school:       document.getElementById('schoolName').value.trim(),
+    teamName:     document.getElementById('teamName').value.trim(),
+    povertyReduction: document.getElementById('povertyReduction').checked,
+    notes:        document.getElementById('notes').value.trim(),
+  };
+  for (let i = 1; i <= maxP; i++) {
+    const name = document.getElementById(`p${i}-name`)?.value.trim();
+    if (name) {
+      payload[`player${i}Name`]     = name;
+      payload[`player${i}Id`]       = document.getElementById(`p${i}-id`)?.value.trim();
+      payload[`player${i}Birthday`] = document.getElementById(`p${i}-bday`)?.value;
+      payload[`player${i}Size`]     = document.getElementById(`p${i}-size`)?.value;
+      payload[`player${i}IsALevel`] = document.getElementById(`p${i}-alevel`)?.value === 'yes';
+    }
+  }
+  if (cat.isTeam) {
+    const tp = [];
+    for (let i = 1; i <= 7; i++) {
+      const n = document.getElementById(`p${i}-name`)?.value.trim();
+      if (n) tp.push({ name:n, id:document.getElementById(`p${i}-id`)?.value.trim(), size:document.getElementById(`p${i}-size`)?.value });
+    }
+    payload.teamPlayers = JSON.stringify(tp);
+    payload.player1Name = tp[0]?.name; payload.player1Id = tp[0]?.id;
+  }
+
+  showLoading(true);
+  document.getElementById('submitBtn').disabled = true;
+  try {
+    const r = await fetch(API_URL, { method:'POST', body:JSON.stringify({ action:'register', payload }) });
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById('done-label').textContent = '您的報名編號為';
+      document.getElementById('done-regIds').innerHTML = `<div class="success-id">${d.registrationId}</div>`;
+      showDone();
+    } else {
+      alert('❌ 報名失敗：' + d.message);
+      document.getElementById('submitBtn').disabled = false;
+    }
+  } catch(e) {
+    alert('⚠️ 網路錯誤，請稍後再試。如持續失敗請聯繫 Line：@834xlooq');
+    document.getElementById('submitBtn').disabled = false;
+  } finally { showLoading(false); }
+}
+
+// ════════════════════════════════════════
+// 團報邏輯
+// ════════════════════════════════════════
+function showBatchSection() {
+  ['step1','step2','step3','step4','step5'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  document.getElementById('batchSection').classList.remove('hidden');
+  document.getElementById('stepIndicator').classList.add('hidden');
+  if (batchEntries.length === 0) addBatchEntry();
+  window.scrollTo(0,0);
+}
+
+function addBatchEntry() {
+  batchEntryCounter++;
+  const id = batchEntryCounter;
+  batchEntries.push({ id, category:'', event:'', categoryData:null, playerCount:1, players:[], fee:0, valid:false });
+  renderBatchEntry(id);
+  updateBatchFeeSummary();
+}
+
+function removeBatchEntry(id) {
+  if (batchEntries.length <= 1) { alert('至少需要一個報名項目'); return; }
+  batchEntries = batchEntries.filter(e => e.id !== id);
+  document.getElementById(`batch-entry-${id}`)?.remove();
+  updateBatchFeeSummary();
+}
+
+function renderBatchEntry(id) {
+  const container = document.getElementById('batchEntries');
+  const wrap = document.createElement('div');
+  wrap.className = 'batch-entry'; wrap.id = `batch-entry-${id}`;
+
+  const catOptions = ALL_CATEGORIES.map(c => `<option value="${c.name}" data-type="${c.type}">${c.type} — ${c.name}</option>`).join('');
+
+  wrap.innerHTML = `
+    <div class="batch-entry-header" onclick="toggleBatchEntry(${id})">
+      <div>
+        <div class="entry-title">報名項目 ${id}</div>
+        <div class="entry-subtitle" id="batch-subtitle-${id}">尚未選擇組別</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="entry-badge" id="batch-fee-badge-${id}">未計費</span>
+        <button class="btn btn-red btn-sm" onclick="event.stopPropagation();removeBatchEntry(${id})">✕ 移除</button>
+      </div>
+    </div>
+    <div class="batch-entry-body" id="batch-body-${id}">
+      <div class="form-row">
+        <div class="form-group">
+          <label>組別 <span class="req">*</span></label>
+          <select id="bcat-${id}" onchange="onBatchCategoryChange(${id})">
+            <option value="">— 請選擇組別 —</option>
+            ${catOptions}
+          </select>
+        </div>
+        <div class="form-group" id="bevent-group-${id}" style="display:none">
+          <label>項目 <span class="req">*</span></label>
+          <select id="bevt-${id}" onchange="onBatchEventChange(${id})">
+            <option value="">— 請選擇項目 —</option>
+          </select>
+        </div>
+      </div>
+      <div class="hint" id="bcat-hint-${id}" style="margin-bottom:14px;color:var(--gray);font-size:12px"></div>
+      <div id="bplayers-${id}"></div>
+    </div>`;
+  container.appendChild(wrap);
+}
+
+function toggleBatchEntry(id) {
+  const body = document.getElementById(`batch-body-${id}`);
+  body.classList.toggle('collapsed');
+}
+
+function onBatchCategoryChange(id) {
+  const sel    = document.getElementById(`bcat-${id}`);
+  const catName= sel.value;
+  if (!catName) return;
+
+  const cat = ALL_CATEGORIES.find(c => c.name === catName);
+  const entry = batchEntries.find(e => e.id === id);
+  entry.categoryData = cat; entry.category = catName; entry.event = ''; entry.valid = false;
+
+  document.getElementById(`bcat-hint-${id}`).textContent = cat.hint || '';
+
+  const evSel = document.getElementById(`bevt-${id}`);
+  evSel.innerHTML = '<option value="">— 請選擇項目 —</option>';
+  cat.events.forEach(ev => { const o = document.createElement('option'); o.value=ev; o.textContent=ev; evSel.appendChild(o); });
+
+  if (cat.isTeam || cat.isTeam3v3) {
+    entry.event = cat.events[0]; evSel.value = entry.event;
+    document.getElementById(`bevent-group-${id}`).style.display = 'none';
+  } else {
+    document.getElementById(`bevent-group-${id}`).style.display = 'block';
+  }
+  buildBatchPlayers(id);
+  updateBatchEntryHeader(id);
+}
+
+function onBatchEventChange(id) {
+  const entry = batchEntries.find(e => e.id === id);
+  entry.event = document.getElementById(`bevt-${id}`).value;
+  buildBatchPlayers(id);
+  updateBatchEntryHeader(id);
+}
+
+function buildBatchPlayers(id) {
+  const entry = batchEntries.find(e => e.id === id);
+  const cat   = entry.categoryData;
+  const event = entry.event;
+  if (!cat) return;
+
+  let count = cat.isTeam ? 7 : cat.isTeam3v3 ? 3 : ['男雙','女雙','混雙'].includes(event) ? 2 : 1;
+  entry.playerCount = count;
+  const container = document.getElementById(`bplayers-${id}`);
+  container.innerHTML = '';
+
+  if (cat.isTeam) container.innerHTML = `<div class="alert alert-info" style="margin-bottom:12px">每組限7人（最少2人）</div>`;
+
+  for (let i = 1; i <= count; i++) {
+    const req   = cat.isTeam ? i<=2 : true;
+    const reqMk = req ? '<span class="req">*</span>' : '';
+    const block = document.createElement('div');
+    block.className = 'player-block';
+    block.innerHTML = `
+      <div class="player-block-title">選手 ${i} ${!req?'（選填）':''}</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>姓名 ${reqMk}</label>
+          <input type="text" id="bp${id}-${i}-name" placeholder="真實姓名">
+        </div>
+        <div class="form-group">
+          <label>${cat.isStudent?'學生證號':'身分證號'} ${reqMk}</label>
+          <input type="text" id="bp${id}-${i}-id" placeholder="${cat.isStudent?'學生證號':'身分證字號'}">
+        </div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group">
+          <label>出生年月日</label>
+          <input type="date" id="bp${id}-${i}-bday">
+        </div>
+        <div class="form-group">
+          <label>紀念衫尺寸 ${reqMk}</label>
+          <select id="bp${id}-${i}-size" class="size-select">
+            <option value="">— 尺寸 —</option>
+            ${SIZES.map(s=>`<option value="${s}">${s}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>A 級選手</label>
+          <select id="bp${id}-${i}-alevel"><option value="no">否</option><option value="yes">是</option></select>
+        </div>
+      </div>`;
+    container.appendChild(block);
+  }
+  calcBatchEntryFee(id);
+}
+
+function calcBatchEntryFee(id) {
+  const entry = batchEntries.find(e => e.id === id);
+  if (!entry?.categoryData) return;
+  const cat   = entry.categoryData;
+  const event = entry.event;
+  let fee = 0;
+  if (cat.isTeam)       fee = cat.isCompetitive ? 4000 : 3600;
+  else if (cat.isTeam3v3) fee = 1500;
+  else if (['男單','女單'].includes(event)) fee = cat.isCompetitive ? 900 : 700;
+  else if (['男雙','女雙','混雙'].includes(event)) fee = 1300;
+  entry.fee = fee;
+  document.getElementById(`batch-fee-badge-${id}`).textContent = fee > 0 ? '$'+fee.toLocaleString() : '未計費';
+  updateBatchFeeSummary();
+}
+
+function updateBatchEntryHeader(id) {
+  const entry = batchEntries.find(e => e.id === id);
+  if (!entry) return;
+  const sub = entry.category ? `${entry.category}${entry.event?' — '+entry.event:''}` : '尚未選擇組別';
+  document.getElementById(`batch-subtitle-${id}`).textContent = sub;
+  calcBatchEntryFee(id);
+  const el = document.getElementById(`batch-entry-${id}`);
+  el.classList.toggle('entry-valid', !!(entry.category && entry.event));
+}
+
+function updateBatchFeeSummary() {
+  const total  = batchEntries.reduce((s, e) => s + (e.fee||0), 0);
+  const el     = document.getElementById('batchFeeSummary');
+  let html = '';
+  batchEntries.forEach(e => {
+    const label = e.category ? `${e.category}${e.event?' — '+e.event:''}` : `項目 ${e.id}`;
+    html += `<div class="batch-fee-row"><span>${label}</span><span>${e.fee>0?'$'+e.fee.toLocaleString():'未填寫'}</span></div>`;
+  });
+  html += `<div class="batch-fee-row"><span>合計（共 ${batchEntries.length} 項）</span><span>$${total.toLocaleString()}</span></div>`;
+  el.innerHTML = html;
+}
+
+// ── 團報送出 ──
+async function submitBatchRegistration() {
+  // Validate contact info
+  let valid = true;
+  const cname  = document.getElementById('b-contactName').value.trim();
+  const cphone = document.getElementById('b-contactPhone').value.trim();
+  const cemail = document.getElementById('b-contactEmail').value.trim();
+  const cunit  = document.getElementById('b-unitName').value.trim();
+  const code   = document.getElementById('b-transferCode').value.trim();
+
+  if (!cname)  { showErr('err-b-contactName');  valid=false; } else hideErr('err-b-contactName');
+  if (!/^09\d{8}$/.test(cphone)) { showErr('err-b-contactPhone'); valid=false; } else hideErr('err-b-contactPhone');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cemail)) { showErr('err-b-contactEmail'); valid=false; } else hideErr('err-b-contactEmail');
+  if (!cunit)  { showErr('err-b-unitName');     valid=false; } else hideErr('err-b-unitName');
+  if (!/^\d{5}$/.test(code)) { showErr('err-b-transferCode'); valid=false; } else hideErr('err-b-transferCode');
+  if (!valid) return;
+
+  // Validate entries
+  const entriesPayload = [];
+  for (const entry of batchEntries) {
+    if (!entry.category || !entry.categoryData) { alert('請確認所有報名項目都已選擇組別。'); return; }
+    const cat   = entry.categoryData;
+    const event = entry.event;
+    if (!entry.event && !cat.isTeam && !cat.isTeam3v3) { alert(`報名項目 ${entry.id}：請選擇項目。`); return; }
+
+    const required = cat.isTeam ? 2 : entry.playerCount;
+    const ep = { type:entry.type||cat.type, category:entry.category, event:entry.event, fee:entry.fee, _label:`項目${entry.id}` };
+
+    for (let i = 1; i <= required; i++) {
+      const name = document.getElementById(`bp${entry.id}-${i}-name`)?.value.trim();
+      const id2  = document.getElementById(`bp${entry.id}-${i}-id`)?.value.trim();
+      const size = document.getElementById(`bp${entry.id}-${i}-size`)?.value;
+      if (!name) { alert(`報名項目 ${entry.id}：選手 ${i} 請填寫姓名。`); return; }
+      if (!id2)  { alert(`報名項目 ${entry.id}：選手 ${i} 請填寫證件號碼。`); return; }
+      if (!size) { alert(`報名項目 ${entry.id}：選手 ${i} 請選擇紀念衫尺寸。`); return; }
+      ep[`player${i}Name`]     = name;
+      ep[`player${i}Id`]       = id2;
+      ep[`player${i}Birthday`] = document.getElementById(`bp${entry.id}-${i}-bday`)?.value || '';
+      ep[`player${i}Size`]     = size;
+      ep[`player${i}IsALevel`] = document.getElementById(`bp${entry.id}-${i}-alevel`)?.value === 'yes';
+    }
+    // Optional extra players (for team)
+    if (cat.isTeam) {
+      for (let i = required+1; i <= 7; i++) {
+        const name = document.getElementById(`bp${entry.id}-${i}-name`)?.value.trim();
+        if (name) {
+          ep[`player${i}Name`] = name;
+          ep[`player${i}Id`]   = document.getElementById(`bp${entry.id}-${i}-id`)?.value.trim();
+          ep[`player${i}Size`] = document.getElementById(`bp${entry.id}-${i}-size`)?.value;
+          ep[`player${i}IsALevel`] = document.getElementById(`bp${entry.id}-${i}-alevel`)?.value === 'yes';
+        }
+      }
+    }
+    entriesPayload.push(ep);
+  }
+
+  const total = entriesPayload.reduce((s,e) => s+(e.fee||0), 0);
+  if (!confirm(`確認送出 ${entriesPayload.length} 筆報名？合計費用 $${total.toLocaleString()}，匯款後五碼：${code}`)) return;
+
+  showLoading(true);
+  document.getElementById('batchSubmitBtn').disabled = true;
+
+  try {
+    const r = await fetch(API_URL, {
+      method:'POST',
+      body: JSON.stringify({
+        action: 'batchRegister',
+        payload: {
+          entries: entriesPayload,
+          contactName: cname, contactPhone: cphone, email: cemail,
+          unitName: cunit, notes: document.getElementById('b-notes').value.trim(),
+          transferCode: code
+        }
+      })
+    });
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById('done-label').textContent = `共 ${d.total} 筆報名成功！報名編號：`;
+      document.getElementById('done-regIds').innerHTML = (d.registrationIds||[]).map(id=>`<div class="success-id">${id}</div>`).join('');
+      showDone();
+    } else {
+      alert('❌ 報名失敗：' + d.message);
+      document.getElementById('batchSubmitBtn').disabled = false;
+    }
+  } catch(e) {
+    alert('⚠️ 網路錯誤，請稍後再試。如持續失敗請聯繫 Line：@834xlooq');
+    document.getElementById('batchSubmitBtn').disabled = false;
+  } finally { showLoading(false); }
+}
+
+// ── Done ──
+function showDone() {
+  ['step1','step2','step3','step4','step5','batchSection'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  document.getElementById('stepIndicator').classList.add('hidden');
+  document.getElementById('stepDone').classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+
+// ── Helpers ──
+function showErr(id) { const el=document.getElementById(id); if(el){ el.classList.add('show'); const prev=el.previousElementSibling; if(prev?.tagName!=='LABEL') prev?.classList.add('error'); } }
+function hideErr(id) { const el=document.getElementById(id); if(el){ el.classList.remove('show'); const prev=el.previousElementSibling; if(prev?.tagName!=='LABEL') prev?.classList.remove('error'); } }
+function showLoading(s) { document.getElementById('loadingOverlay').classList.toggle('show',s); }
+</script>
+</body>
+</html>
