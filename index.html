@@ -362,6 +362,16 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:18px 2
         <div class="err-msg" id="err-b-unitName">請填寫學校名稱或單位</div>
         <div class="hint">🏫 學校統一報名請填寫<strong>完整校名</strong>，系統將以此計算小武士精神總錦標積分</div>
       </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>領隊姓名</label>
+          <input type="text" id="b-leaderName" placeholder="領隊真實姓名（選填）">
+        </div>
+        <div class="form-group">
+          <label>教練姓名</label>
+          <input type="text" id="b-coachName" placeholder="教練真實姓名（選填）">
+        </div>
+      </div>
       <div class="form-group">
         <label>備註</label>
         <textarea id="b-notes" rows="2" placeholder="其他說明（選填）"></textarea>
@@ -433,7 +443,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:18px 2
 // ★ 填入你的 Google Apps Script 部署 URL
 const API_URL = 'https://script.google.com/macros/s/AKfycbzwU-FoWqJV784E7c1PbTS1byN2jLT3_ILIXqlnvicLoPPoyOCrCMMaD33m4vjOpe5C/exec';
 
-const SIZES = ['XS','S','M','L','XL','2XL','3XL'];
+const SIZES = ['小朋友6號','小朋友8號','小朋友12號','XS','S','M','L','XL','2XL','3XL','4XL'];
 
 const CATEGORY_DATA = {
   '個人賽': [
@@ -452,8 +462,8 @@ const CATEGORY_DATA = {
   ],
   '團體賽': [
     { name:'競技專業團體組', events:['三點雙打'], isTeam:true, isCompetitive:true, hint:'不限齡，女生可打男雙點，每隊限至多2位A級男性選手。' },
-    { name:'社會青年團體組', events:['三點雙打'], isTeam:true, hint:'不限齡，三點雙打（男雙、女雙、男雙）。' },
-    { name:'社會青壯團體組', events:['三點雙打'], isTeam:true, hint:'每位選手需30歲以上。' },
+    { name:'社會青年團體組', events:['三點雙打'], isTeam:true, isNoALevel:true, hint:'不限齡，三點雙打（男雙、女雙、男雙）。謝絕A級選手報名。' },
+    { name:'社會青壯團體組', events:['三點雙打'], isTeam:true, isNoALevel:true, hint:'每位選手需30歲以上。謝絕A級選手報名。' },
     { name:'壯年團體組',     events:['三點雙打'], isTeam:true, hint:'每位選手需30歲以上，每組限2位A級（需45歲以上）。' },
   ],
 };
@@ -590,10 +600,29 @@ function buildPlayersForm() {
   container.innerHTML = '';
 
   if (cat.isTeam) {
-    container.innerHTML = `<div class="alert alert-info">每組限報 7 人（最少 2 人），未填欄位不計入名單。</div>`;
+    container.innerHTML = `<div class="alert alert-info">每組限報 7 人（前 6 位必填，第 7 位選填）。</div>`;
   }
   for (let i = 1; i <= count; i++) {
-    container.appendChild(buildPlayerBlock(i, cat.isTeam ? i <= 2 : true));
+    container.appendChild(buildPlayerBlock(i, cat.isTeam ? i <= 6 : true));
+  }
+
+  // 領隊 & 教練（團體賽 / 3v3 適用）
+  if (cat.isTeam || cat.isTeam3v3) {
+    const staffBlock = document.createElement('div');
+    staffBlock.className = 'player-block';
+    staffBlock.innerHTML = `
+      <div class="player-block-title" style="color:#aaa">👔 領隊 / 教練（選填）</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>領隊姓名</label>
+          <input type="text" id="leaderName" placeholder="領隊真實姓名（選填）">
+        </div>
+        <div class="form-group">
+          <label>教練姓名</label>
+          <input type="text" id="coachName" placeholder="教練真實姓名（選填）">
+        </div>
+      </div>`;
+    container.appendChild(staffBlock);
   }
 }
 
@@ -632,13 +661,13 @@ function buildPlayerBlock(idx, required) {
         </select>
         <div class="err-msg" id="err-p${idx}-size">請選擇尺寸</div>
       </div>
-      <div class="form-group">
+      ${!state.categoryData?.isNoALevel ? `<div class="form-group">
         <label>A 級選手身分</label>
         <select id="p${idx}-alevel">
           <option value="no">否（一般選手）</option>
           <option value="yes">是（A 級選手）</option>
         </select>
-      </div>
+      </div>` : `<input type="hidden" id="p${idx}-alevel" value="no">`}
     </div>`;
   return div;
 }
@@ -664,7 +693,7 @@ function onIdInput(idx) {
 
 function validateStep3() {
   const cat = state.categoryData;
-  const required = cat.isTeam ? 2 : state.playerCount;
+  const required = cat.isTeam ? 6 : state.playerCount;
   let valid = true;
   for (let i = 1; i <= required; i++) {
     const name = document.getElementById(`p${i}-name`)?.value.trim();
@@ -718,6 +747,12 @@ function buildSummary() {
     const size = document.getElementById(`p${i}-size`)?.value;
     if (name) rows.push([`選手${i}`, `${name}　尺寸：${size||'未選'}`]);
   }
+  // 領隊 & 教練
+  const leaderName = document.getElementById('leaderName')?.value.trim();
+  const coachName  = document.getElementById('coachName')?.value.trim();
+  if (leaderName) rows.push(['領隊', leaderName + (document.getElementById('leaderSize')?.value ? '　尺寸：'+document.getElementById('leaderSize').value : '')]);
+  if (coachName)  rows.push(['教練', coachName  + (document.getElementById('coachSize')?.value  ? '　尺寸：'+document.getElementById('coachSize').value  : '')]);
+
   rows.push(['聯絡人', document.getElementById('contactName').value.trim()]);
   rows.push(['電話',   document.getElementById('contactPhone').value.trim()]);
   rows.push(['Email',  document.getElementById('contactEmail').value.trim()]);
@@ -767,6 +802,10 @@ async function submitRegistration() {
     teamName:     document.getElementById('teamName').value.trim(),
     povertyReduction: document.getElementById('povertyReduction').checked,
     notes:        document.getElementById('notes').value.trim(),
+    leaderName:   document.getElementById('leaderName')?.value.trim() || '',
+    leaderSize:   document.getElementById('leaderSize')?.value || '',
+    coachName:    document.getElementById('coachName')?.value.trim() || '',
+    coachSize:    document.getElementById('coachSize')?.value || '',
   };
   for (let i = 1; i <= maxP; i++) {
     const name = document.getElementById(`p${i}-name`)?.value.trim();
@@ -921,10 +960,10 @@ function buildBatchPlayers(id) {
   const container = document.getElementById(`bplayers-${id}`);
   container.innerHTML = '';
 
-  if (cat.isTeam) container.innerHTML = `<div class="alert alert-info" style="margin-bottom:12px">每組限7人（最少2人）</div>`;
+  if (cat.isTeam) container.innerHTML = `<div class="alert alert-info" style="margin-bottom:12px">每組限報 7 人（前 6 位必填，第 7 位選填）。</div>`;
 
   for (let i = 1; i <= count; i++) {
-    const req   = cat.isTeam ? i<=2 : true;
+    const req   = cat.isTeam ? i<=6 : true;
     const reqMk = req ? '<span class="req">*</span>' : '';
     const block = document.createElement('div');
     block.className = 'player-block';
@@ -952,13 +991,33 @@ function buildBatchPlayers(id) {
             ${SIZES.map(s=>`<option value="${s}">${s}</option>`).join('')}
           </select>
         </div>
-        <div class="form-group">
+        ${!cat.isNoALevel ? `<div class="form-group">
           <label>A 級選手</label>
           <select id="bp${id}-${i}-alevel"><option value="no">否</option><option value="yes">是</option></select>
-        </div>
+        </div>` : `<input type="hidden" id="bp${id}-${i}-alevel" value="no">`}
       </div>`;
     container.appendChild(block);
   }
+
+  // 領隊 & 教練（團體賽 / 3v3 適用）
+  if (cat.isTeam || cat.isTeam3v3) {
+    const staffBlock = document.createElement('div');
+    staffBlock.className = 'player-block';
+    staffBlock.innerHTML = `
+      <div class="player-block-title" style="color:#aaa">👔 領隊 / 教練（選填）</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>領隊姓名</label>
+          <input type="text" id="bleader-${id}-name" placeholder="領隊真實姓名（選填）">
+        </div>
+        <div class="form-group">
+          <label>教練姓名</label>
+          <input type="text" id="bcoach-${id}-name" placeholder="教練真實姓名（選填）">
+        </div>
+      </div>`;
+    container.appendChild(staffBlock);
+  }
+
   calcBatchEntryFee(id);
 }
 
@@ -1024,7 +1083,7 @@ async function submitBatchRegistration() {
     const event = entry.event;
     if (!entry.event && !cat.isTeam && !cat.isTeam3v3) { alert(`報名項目 ${entry.id}：請選擇項目。`); return; }
 
-    const required = cat.isTeam ? 2 : entry.playerCount;
+    const required = cat.isTeam ? 6 : entry.playerCount;
     const ep = { type:entry.type||cat.type, category:entry.category, event:entry.event, fee:entry.fee, _label:`項目${entry.id}` };
 
     for (let i = 1; i <= required; i++) {
@@ -1052,6 +1111,12 @@ async function submitBatchRegistration() {
         }
       }
     }
+    // 領隊 & 教練
+    ep.leaderName = document.getElementById(`bleader-${entry.id}-name`)?.value.trim() || '';
+    ep.leaderSize = document.getElementById(`bleader-${entry.id}-size`)?.value || '';
+    ep.coachName  = document.getElementById(`bcoach-${entry.id}-name`)?.value.trim() || '';
+    ep.coachSize  = document.getElementById(`bcoach-${entry.id}-size`)?.value || '';
+
     entriesPayload.push(ep);
   }
 
@@ -1070,7 +1135,9 @@ async function submitBatchRegistration() {
           entries: entriesPayload,
           contactName: cname, contactPhone: cphone, email: cemail,
           unitName: cunit, notes: document.getElementById('b-notes').value.trim(),
-          transferCode: code
+          transferCode: code,
+          leaderName: document.getElementById('b-leaderName').value.trim(),
+          coachName:  document.getElementById('b-coachName').value.trim()
         }
       })
     });
