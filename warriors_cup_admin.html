@@ -158,7 +158,7 @@ tbody td{padding:10px 12px;color:#ddd;vertical-align:middle;white-space:nowrap}
           <div class="stat-card">
             <div class="stat-num" id="stat-total">—</div>
             <div class="stat-label">總報名組數</div>
-            <div class="stat-sub">上限 750 組</div>
+            <div class="stat-sub">上限 1,000 組</div>
           </div>
           <div class="stat-card">
             <div class="stat-num" id="stat-confirmed" style="color:var(--green)">—</div>
@@ -243,10 +243,13 @@ tbody td{padding:10px 12px;color:#ddd;vertical-align:middle;white-space:nowrap}
                   <th>時間</th>
                   <th>組別</th>
                   <th>項目</th>
-                  <th>選手1</th>
-                  <th>選手2</th>
+                  <th>選手1（尺寸）</th>
+                  <th>選手2（尺寸）</th>
                   <th>聯絡人</th>
                   <th>電話</th>
+                  <th>隊名/單位</th>
+                  <th>領隊</th>
+                  <th>教練</th>
                   <th>費用</th>
                   <th>匯款五碼</th>
                   <th>清寒減免</th>
@@ -274,7 +277,7 @@ tbody td{padding:10px 12px;color:#ddd;vertical-align:middle;white-space:nowrap}
 // ================================================================
 // ★ 填入你的 Google Apps Script 部署 URL
 // ================================================================
-const API_URL = 'https://script.google.com/macros/s/AKfycbzwU-FoWqJV784E7c1PbTS1byN2jLT3_ILIXqlnvicLoPPoyOCrCMMaD33m4vjOpe5C/exec';
+const API_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
 
 let adminPassword = '';
 let allRows = [], allHeaders = [];
@@ -336,8 +339,8 @@ function showTab(tab) {
 function renderDashboard(d) {
   const rows = d.rows || [];
   const total     = rows.length;
-  const confirmed = rows.filter(r => r[25] === 'confirmed').length;
-  const pending   = rows.filter(r => r[25] === 'pending').length;
+  const confirmed = rows.filter(r => r[29] === 'confirmed').length;
+  const pending   = rows.filter(r => r[29] === 'pending').length;
 
   document.getElementById('stat-total').textContent     = total;
   document.getElementById('stat-confirmed').textContent = confirmed;
@@ -439,43 +442,49 @@ function populateCategoryFilter(byCategory) {
   });
 }
 
-// Col indices (0-based): 0=time, 1=regId, 2=category, 3=event,
-//   4=p1name, 5=p1id, 6=p1bday, 7=p1alevel,
-//   8=p2name, 9=p2id, 10=p2bday, 11=p2alevel,
-//   12=p3name, 13=p3id, 14=p3bday,
-//   15=teamName, 16=teamPlayers,
-//   17=contactName, 18=contactPhone, 19=email, 20=school,
-//   21=poverty, 22=fee, 23=transferCode, 24=notes, 25=status
+// v2 欄位對應 (0-based):
+//  0=時間  1=報名編號  2=組別  3=項目
+//  4=選手1姓名  5=選手1證件  6=選手1生日  7=選手1A級  8=選手1尺寸
+//  9=選手2姓名 10=選手2證件 11=選手2生日 12=選手2A級 13=選手2尺寸
+// 14=選手3姓名 15=選手3證件 16=選手3生日 17=選手3尺寸
+// 18=隊名/單位 19=隊伍名稱 20=團體隊員JSON
+// 21=聯絡人 22=聯絡電話 23=Email 24=學校
+// 25=清寒減免 26=費用 27=匯款五碼 28=備註 29=狀態 30=批次ID
+// 31=領隊姓名 32=領隊尺寸 33=教練姓名 34=教練尺寸
 
 function renderTable(rows) {
   const tbody = document.getElementById('regTableBody');
   document.getElementById('totalCount').textContent = allRows.length;
 
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:#666;padding:30px">尚無符合條件的報名資料</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="16" style="text-align:center;color:#666;padding:30px">尚無符合條件的報名資料</td></tr>';
     document.getElementById('showCount').textContent = 0;
     return;
   }
 
   document.getElementById('showCount').textContent = rows.length;
   tbody.innerHTML = rows.map((r, ri) => {
-    const status  = r[25] || 'pending';
+    const status   = r[29] || 'pending';
     const badgeCls = `status-badge status-${status}`;
     const badgeTxt = {pending:'待確認', confirmed:'已確認', cancelled:'已取消'}[status] || status;
-    const regId   = r[1] || '';
-    const poverty = r[21] === '是' ? '✅' : '';
+    const regId    = r[1] || '';
+    const poverty  = r[25] === '是' ? '✅' : '';
+    const batchId  = r[30] ? `<span style="font-size:10px;color:#555">${r[30]}</span>` : '';
 
     return `<tr>
-      <td style="font-family:monospace;color:var(--gold)">${regId}</td>
+      <td style="font-family:monospace;color:var(--gold)">${regId}${batchId?'<br>'+batchId:''}</td>
       <td style="font-size:12px;color:#888">${String(r[0]).slice(0,16)}</td>
       <td>${r[2]||''}</td>
       <td>${r[3]||''}</td>
-      <td>${r[4]||''}</td>
-      <td>${r[8]||''}</td>
-      <td>${r[17]||''}</td>
+      <td>${r[4]||''}<br><span style="font-size:11px;color:#666">${r[8]||''}</span></td>
+      <td>${r[9]||''}<br><span style="font-size:11px;color:#666">${r[13]||''}</span></td>
+      <td>${r[21]||''}</td>
+      <td>${r[22]||''}</td>
       <td>${r[18]||''}</td>
-      <td style="color:var(--gold)">$${Number(r[22]||0).toLocaleString()}</td>
-      <td style="font-family:monospace;letter-spacing:3px">${r[23]||''}</td>
+      <td>${r[31]||''}</td>
+      <td>${r[33]||''}</td>
+      <td style="color:var(--gold)">$${Number(r[26]||0).toLocaleString()}</td>
+      <td style="font-family:monospace;letter-spacing:3px">${r[27]||''}</td>
       <td style="text-align:center">${poverty}</td>
       <td><span class="${badgeCls}">${badgeTxt}</span></td>
       <td>
@@ -493,9 +502,9 @@ function filterTable() {
 
   const filtered = allRows.filter(r => {
     if (cat  && r[2] !== cat)  return false;
-    if (stat && r[25] !== stat) return false;
+    if (stat && r[29] !== stat) return false;
     if (q) {
-      const searchable = [r[1], r[4], r[8], r[17], r[18]].join(' ').toLowerCase();
+      const searchable = [r[1], r[4], r[9], r[18], r[21], r[22], r[30]].join(' ').toLowerCase();
       if (!searchable.includes(q)) return false;
     }
     return true;
