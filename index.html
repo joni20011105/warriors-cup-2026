@@ -293,7 +293,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:18px 2
       <label class="check-item" id="poverty-check-wrap" style="display:none">
         <input type="checkbox" id="povertyReduction">
         <div class="check-item-text">
-          <div class="check-title">申請學生學生清寒減免</div><div class="check-sub" style="font-size:12px;color:#f0c040;margin-top:5px;line-height:1.6">凡持任何清寒證明在學學生，即可獲得報名費 50% 減免。<br>（採報名登記，於賽事現場繳交證明，當日即可獲得 50% 補助金）</div>
+          <div class="check-title">申請學生清寒減免</div><div class="check-sub" style="font-size:12px;color:#f0c040;margin-top:5px;line-height:1.6">凡持任何清寒證明在學學生，即可獲得報名費 50% 減免。<br>（採報名登記，於賽事現場繳交證明，當日即可獲得 50% 補助金）</div>
           <div class="check-desc">持清寒證明之在學學生適用，請於賽事現場出示證明核實後退款</div>
         </div>
       </label>
@@ -475,7 +475,7 @@ footer{background:var(--black);border-top:1px solid var(--border);padding:18px 2
 </main>
 
 <footer>
-  ⚔ 武士盃籌畫小組 × 快羽會館 &nbsp;|&nbsp; Line：<a href="#">@834xlooq</a> &nbsp;|&nbsp;
+  ⚔ 武士盃籌畫小組 &nbsp;|&nbsp; Line：<a href="#">@834xlooq</a> &nbsp;|&nbsp;
   <a href="https://www.facebook.com/darkwarriorsbmt2025" target="_blank">FB 官方</a>
 </footer>
 
@@ -799,7 +799,7 @@ function buildSummary() {
   const school = document.getElementById('schoolName').value.trim();
   if (school) rows.push(['學校', school]);
   if (document.getElementById('povertyReduction').checked)
-    rows.push(['學生學生清寒減免', '✅ 已勾選，現場憑學生證退費']);
+    rows.push(['學生清寒減免', '✅ 已勾選，現場憑學生證退費']);
 
   document.getElementById('summary-table').innerHTML = rows.map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
   calcFee(document.getElementById('povertyReduction').checked);
@@ -814,11 +814,11 @@ function calcFee(poverty) {
   else if (['男單','女單'].includes(event)) { fee = cat.isCompetitive ? 900 : 700; desc = cat.isCompetitive ? '競技組單打' : '一般單打'; }
   else { fee = 1300; desc = '雙打 / 混雙'; }
   const orig = fee;
-  // 學生學生清寒減免：現場退費，線上不扣款
+  // 學生清寒減免：現場退費，線上不扣款
   state.fee = fee;
   document.getElementById('fee-display').textContent = '$' + fee.toLocaleString();
   let items = `<li><span>${desc}</span><span>$${orig.toLocaleString()}</span></li>`;
-  if (poverty) items += `<li style="color:#f0c040"><span>學生學生清寒減免</span><span>現場退費</span></li>`;
+  if (poverty) items += `<li style="color:#f0c040"><span>學生清寒減免</span><span>現場退費</span></li>`;
   items += `<li><span>合計</span><span>$${fee.toLocaleString()}</span></li>`;
   document.getElementById('fee-items').innerHTML = items;
 }
