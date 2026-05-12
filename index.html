@@ -809,10 +809,10 @@ function calcFee(poverty) {
   const cat   = state.categoryData;
   const event = state.event;
   let fee = 0, desc = '';
-  if (cat.isTeam)       { fee = cat.isCompetitive ? 4000 : 3600; desc = cat.isCompetitive ? '競技專業團體組' : '社會團體組'; }
-  else if (cat.isTeam3v3) { fee = 1500; desc = '3v3 熱血組'; }
-  else if (['男單','女單'].includes(event)) { fee = cat.isCompetitive ? 900 : 700; desc = cat.isCompetitive ? '競技組單打' : '一般單打'; }
-  else { fee = 1300; desc = '雙打 / 混雙'; }
+  if (cat.isTeam)       { fee = cat.isCompetitive ? 4200 : 4000; desc = cat.isCompetitive ? '競技專業團體組' : '社會團體組'; }
+  else if (cat.isTeam3v3) { fee = 1600; desc = '3v3 熱血組'; }
+  else if (['男單','女單'].includes(event)) { fee = cat.isCompetitive ? 1000 : 700; desc = cat.isCompetitive ? '競技組單打' : '一般單打'; }
+  else { fee = 1300; desc = cat.isCompetitive ? '競技組雙打' : '雙打 / 混雙'; }
   const orig = fee;
   // 學生清寒減免：現場退費，線上不扣款
   state.fee = fee;
@@ -1068,9 +1068,9 @@ function calcBatchEntryFee(id) {
   const cat   = entry.categoryData;
   const event = entry.event;
   let fee = 0;
-  if (cat.isTeam)       fee = cat.isCompetitive ? 4000 : 3600;
-  else if (cat.isTeam3v3) fee = 1500;
-  else if (['男單','女單'].includes(event)) fee = cat.isCompetitive ? 900 : 700;
+  if (cat.isTeam)       fee = cat.isCompetitive ? 4200 : 4000;
+  else if (cat.isTeam3v3) fee = 1600;
+  else if (['男單','女單'].includes(event)) fee = cat.isCompetitive ? 1000 : 700;
   else if (['男雙','女雙','混雙'].includes(event)) fee = 1300;
   entry.fee = fee;
   document.getElementById(`batch-fee-badge-${id}`).textContent = fee > 0 ? '$'+fee.toLocaleString() : '未計費';
