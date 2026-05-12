@@ -162,7 +162,7 @@ tbody td{padding:10px 12px;color:#ddd;vertical-align:middle;white-space:nowrap}
           </div>
           <div class="stat-card">
             <div class="stat-num" id="stat-confirmed" style="color:var(--green)">—</div>
-            <div class="stat-label">已確認（匯款）</div>
+            <div class="stat-label">已確認（付款）</div>
           </div>
           <div class="stat-card">
             <div class="stat-num" id="stat-pending" style="color:#f0a500">—</div>
@@ -251,7 +251,7 @@ tbody td{padding:10px 12px;color:#ddd;vertical-align:middle;white-space:nowrap}
                   <th>領隊</th>
                   <th>教練</th>
                   <th>費用</th>
-                  <th>匯款五碼</th>
+                  <th>付款五碼</th><th>付款方式</th>
                   <th>清寒減免</th>
                   <th>狀態</th>
                   <th>操作</th>
@@ -449,7 +449,7 @@ function populateCategoryFilter(byCategory) {
 // 14=選手3姓名 15=選手3證件 16=選手3生日 17=選手3尺寸
 // 18=隊名/單位 19=隊伍名稱 20=團體隊員JSON
 // 21=聯絡人 22=聯絡電話 23=Email 24=學校
-// 25=清寒減免 26=費用 27=匯款五碼 28=備註 29=狀態 30=批次ID
+// 25=清寒減免 26=費用 27=付款五碼 28=備註 29=狀態 30=批次ID 35=付款方式
 // 31=領隊姓名 32=領隊尺寸 33=教練姓名 34=教練尺寸
 
 function renderTable(rows) {
@@ -485,6 +485,7 @@ function renderTable(rows) {
       <td>${r[33]||''}</td>
       <td style="color:var(--gold)">$${Number(r[26]||0).toLocaleString()}</td>
       <td style="font-family:monospace;letter-spacing:3px">${r[27]||''}</td>
+      <td style="font-size:12px">${r[35]==='街口'?'💚 街口':'🏦 ATM'}</td>
       <td style="text-align:center">${poverty}</td>
       <td><span class="${badgeCls}">${badgeTxt}</span></td>
       <td>
@@ -513,7 +514,7 @@ function filterTable() {
 }
 
 async function updateStatus(regId, status) {
-  const label = {confirmed:'確認匯款', cancelled:'取消報名'}[status];
+  const label = {confirmed:'確認付款', cancelled:'取消報名'}[status];
   if (!confirm(`確定要將 ${regId} 設為「${label}」？`)) return;
   showLoading(true);
   try {
