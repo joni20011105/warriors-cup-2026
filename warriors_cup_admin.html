@@ -578,7 +578,25 @@ function showDetail(ri) {
   const r = currentRows[ri];
   if (!r) return;
 
-  const isTeam = r[18] && (r[20] || '').length > 5;  // has teamPlayers JSON
+  // Robust team detection: any of these means it's a team registration
+  let teamPlayers = [];
+  if (r[20]) {
+    try {
+      const parsed = typeof r[20] === 'string' ? JSON.parse(r[20]) : r[20];
+      if (Array.isArray(parsed)) teamPlayers = parsed;
+    } catch(e) { console.warn('JSON parse failed:', e, r[20]); }
+  }
+  // Also collect players 4-7 from individual columns (col 36-47) if present
+  for (let i = 0; i < 4; i++) {
+    const base = 36 + i*3;
+    if (r[base]) {
+      teamPlayers[3+i] = { name: r[base], id: r[base+1] || '', size: r[base+2] || '' };
+    }
+  }
+  // Filter out empties
+  teamPlayers = teamPlayers.filter(p => p && p.name);
+
+  const isTeam = teamPlayers.length > 0 || (r[18] && r[3] === '三點雙打');
 
   let html = '';
 
@@ -603,20 +621,25 @@ function showDetail(ri) {
     <h3>👥 選手名單</h3>`;
 
   if (isTeam) {
-    // Team: parse JSON
-    try {
-      const players = JSON.parse(r[20]);
-      players.forEach((p, i) => {
-        html += `<div class="player-row">
-          <span class="num">${i+1}.</span>
-          <span class="name">${p.name||''}</span>
-          <span class="id">${p.id||''}</span>
-          ${p.size?`<span class="size">${p.size}</span>`:''}
-        </div>`;
-      });
-      if (!players.length) html += '<div style="color:#888">無選手資料</div>';
-    } catch(e) {
-      html += `<div style="color:#f66">隊員資料解析失敗：${e.message}</div>`;
+    // Team: combine player 1 (from cols 4-8) + teamPlayers array
+    const allPlayers = [];
+    if (r[4]) allPlayers.push({ name: r[4], id: r[5]||'', size: r[8]||'' });
+    teamPlayers.forEach(p => {
+      // Avoid duplicating player 1
+      if (!allPlayers.find(x => x.name === p.name && x.id === p.id)) {
+        allPlayers.push(p);
+      }
+    });
+    allPlayers.forEach((p, i) => {
+      html += `<div class="player-row">
+        <span class="num">${i+1}.</span>
+        <span class="name">${p.name||''}</span>
+        <span class="id">${p.id||''}</span>
+        ${p.size?`<span class="size">${p.size}</span>`:''}
+      </div>`;
+    });
+    if (!allPlayers.length) {
+      html += `<div style="color:#f66">無選手資料<br><small style="color:#888">Debug：r[20]=${JSON.stringify(r[20]||'(空)').slice(0,200)}</small></div>`;
     }
   } else {
     // Individual/doubles/3v3: cols 4-17
