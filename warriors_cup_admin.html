@@ -277,7 +277,7 @@ tbody td{padding:10px 12px;color:#ddd;vertical-align:middle;white-space:nowrap}
 // ================================================================
 // ★ 填入你的 Google Apps Script 部署 URL
 // ================================================================
-const API_URL = 'https://script.google.com/macros/s/AKfycbzwU-FoWqJV784E7c1PbTS1byN2jLT3_ILIXqlnvicLoPPoyOCrCMMaD33m4vjOpe5C/exec';
+const API_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
 
 let adminPassword = '';
 let allRows = [], allHeaders = [];
@@ -452,7 +452,9 @@ function populateCategoryFilter(byCategory) {
 // 25=學生清寒減免 26=費用 27=付款五碼 28=備註 29=狀態 30=批次ID 35=付款方式
 // 31=領隊姓名 32=領隊尺寸 33=教練姓名 34=教練尺寸
 
+let currentRows = [];
 function renderTable(rows) {
+  currentRows = rows;
   const tbody = document.getElementById('regTableBody');
   document.getElementById('totalCount').textContent = allRows.length;
 
@@ -489,7 +491,8 @@ function renderTable(rows) {
       <td style="text-align:center">${poverty}</td>
       <td><span class="${badgeCls}">${badgeTxt}</span></td>
       <td>
-        <button class="btn btn-sm btn-green" onclick="updateStatus('${regId}','confirmed')">確認</button>
+        <button class="btn btn-sm" style="background:#444;color:#fff" onclick="showDetail(${ri})">詳細</button>
+        <button class="btn btn-sm btn-green" style="margin-left:4px" onclick="updateStatus('${regId}','confirmed')">確認</button>
         <button class="btn btn-sm btn-red" style="margin-left:4px" onclick="updateStatus('${regId}','cancelled')">取消</button>
       </td>
     </tr>`;
@@ -546,5 +549,154 @@ function showListAlert(msg, type) {
 
 function showLoading(s) { document.getElementById('loadingOverlay').classList.toggle('show',s); }
 </script>
+
+<!-- ═══ Detail Modal ═══ -->
+<div id="detailModal" class="modal hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:30px">
+  <div style="background:#1a1a1a;border:2px solid var(--gold);border-radius:14px;max-width:900px;width:100%;max-height:90vh;overflow-y:auto;padding:30px;position:relative">
+    <button onclick="closeDetail()" style="position:absolute;top:14px;right:14px;background:none;border:none;color:var(--gold);font-size:28px;cursor:pointer">×</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<style>
+  .modal.hidden { display: none !important; }
+  .detail-section { margin-bottom: 20px; padding: 14px; background:#222; border-radius:8px; border-left: 3px solid var(--gold); }
+  .detail-section h3 { color: var(--gold); font-size:15px; margin-bottom:10px; letter-spacing:1px }
+  .detail-grid { display:grid; grid-template-columns: 140px 1fr; gap: 8px 14px; font-size: 14px; }
+  .detail-grid .k { color:#888 }
+  .detail-grid .v { color:#eee; font-weight: 500 }
+  .player-row { display:flex; gap:10px; padding:8px 0; border-bottom: 1px dashed #333; align-items:center }
+  .player-row:last-child { border-bottom: none }
+  .player-row .num { color:var(--gold); font-weight:700; min-width:28px }
+  .player-row .name { color:#fff; font-weight:600; min-width:120px }
+  .player-row .id { color:#aaa; font-family:monospace; min-width:120px }
+  .player-row .size { background:#3a2f10; color:var(--gold); padding:2px 8px; border-radius:4px; font-size:12px }
+</style>
+
+<script>
+function showDetail(ri) {
+  const r = currentRows[ri];
+  if (!r) return;
+
+  const isTeam = r[18] && (r[20] || '').length > 5;  // has teamPlayers JSON
+
+  let html = '';
+
+  // Basic info
+  html += `<h2 style="color:var(--gold);margin-bottom:18px">📋 報名詳細資料</h2>`;
+
+  html += `<div class="detail-section">
+    <h3>🏷️ 報名資訊</h3>
+    <div class="detail-grid">
+      <div class="k">報名編號</div><div class="v" style="color:var(--gold);font-family:monospace">${r[1]||''}</div>
+      <div class="k">時間戳記</div><div class="v">${r[0]||''}</div>
+      <div class="k">組別</div><div class="v">${r[2]||''}</div>
+      <div class="k">項目</div><div class="v">${r[3]||''}</div>
+      ${r[18]?`<div class="k">隊名/單位</div><div class="v" style="color:var(--gold)">${r[18]}</div>`:''}
+      ${r[19]?`<div class="k">隊伍名稱</div><div class="v">${r[19]}</div>`:''}
+      ${r[24]?`<div class="k">學校</div><div class="v">${r[24]}</div>`:''}
+    </div>
+  </div>`;
+
+  // Players section
+  html += `<div class="detail-section">
+    <h3>👥 選手名單</h3>`;
+
+  if (isTeam) {
+    // Team: parse JSON
+    try {
+      const players = JSON.parse(r[20]);
+      players.forEach((p, i) => {
+        html += `<div class="player-row">
+          <span class="num">${i+1}.</span>
+          <span class="name">${p.name||''}</span>
+          <span class="id">${p.id||''}</span>
+          ${p.size?`<span class="size">${p.size}</span>`:''}
+        </div>`;
+      });
+      if (!players.length) html += '<div style="color:#888">無選手資料</div>';
+    } catch(e) {
+      html += `<div style="color:#f66">隊員資料解析失敗：${e.message}</div>`;
+    }
+  } else {
+    // Individual/doubles/3v3: cols 4-17
+    const playerData = [
+      { name: r[4], id: r[5], birth: r[6], alevel: r[7], size: r[8] },
+      { name: r[9], id: r[10], birth: r[11], alevel: r[12], size: r[13] },
+      { name: r[14], id: r[15], birth: r[16], size: r[17] },
+    ];
+    let any = false;
+    playerData.forEach((p, i) => {
+      if (p.name) {
+        any = true;
+        html += `<div class="player-row">
+          <span class="num">${i+1}.</span>
+          <span class="name">${p.name}</span>
+          <span class="id">${p.id||''}</span>
+          ${p.birth?`<span style="color:#888;font-size:12px">${p.birth}</span>`:''}
+          ${p.alevel==='是'?'<span style="background:#7a1612;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px">A級</span>':''}
+          ${p.size?`<span class="size">${p.size}</span>`:''}
+        </div>`;
+      }
+    });
+    if (!any) html += '<div style="color:#888">無選手資料</div>';
+  }
+  html += `</div>`;
+
+  // Team staff (leader/coach)
+  if (r[31] || r[33]) {
+    html += `<div class="detail-section">
+      <h3>👔 領隊 / 教練</h3>
+      <div class="detail-grid">
+        ${r[31]?`<div class="k">領隊姓名</div><div class="v">${r[31]} ${r[32]?`<span class="size" style="display:inline-block">${r[32]}</span>`:''}</div>`:''}
+        ${r[33]?`<div class="k">教練姓名</div><div class="v">${r[33]} ${r[34]?`<span class="size" style="display:inline-block">${r[34]}</span>`:''}</div>`:''}
+      </div>
+    </div>`;
+  }
+
+  // Contact info
+  html += `<div class="detail-section">
+    <h3>📞 聯絡資訊</h3>
+    <div class="detail-grid">
+      <div class="k">聯絡人</div><div class="v">${r[21]||''}</div>
+      <div class="k">電話</div><div class="v">${r[22]||''}</div>
+      <div class="k">Email</div><div class="v">${r[23]||''}</div>
+    </div>
+  </div>`;
+
+  // Payment
+  html += `<div class="detail-section">
+    <h3>💳 付款資訊</h3>
+    <div class="detail-grid">
+      <div class="k">報名費用</div><div class="v" style="color:var(--gold);font-size:16px">$${Number(r[26]||0).toLocaleString()}</div>
+      <div class="k">付款方式</div><div class="v">${r[35]==='街口'?'💚 街口支付':'🏦 ATM 轉帳'}</div>
+      <div class="k">後五碼</div><div class="v" style="font-family:monospace;letter-spacing:3px">${r[27]||'(未填)'}</div>
+      <div class="k">學生清寒減免</div><div class="v">${r[25]==='是'?'✅ 已勾選（現場退費）':'否'}</div>
+      <div class="k">狀態</div><div class="v"><span class="status-badge status-${r[29]||'pending'}">${({pending:'待確認',confirmed:'已確認',cancelled:'已取消'})[r[29]||'pending']}</span></div>
+    </div>
+  </div>`;
+
+  // Notes
+  if (r[28]) {
+    html += `<div class="detail-section">
+      <h3>📝 備註</h3>
+      <div style="color:#ddd;white-space:pre-wrap;font-size:14px">${r[28]}</div>
+    </div>`;
+  }
+
+  document.getElementById('detailContent').innerHTML = html;
+  document.getElementById('detailModal').classList.remove('hidden');
+}
+
+function closeDetail() {
+  document.getElementById('detailModal').classList.add('hidden');
+}
+
+// Close on background click
+document.addEventListener('click', (e) => {
+  if (e.target.id === 'detailModal') closeDetail();
+});
+</script>
+
 </body>
 </html>
